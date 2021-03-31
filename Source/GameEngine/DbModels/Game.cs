@@ -13,7 +13,7 @@ namespace GameEngine.Models
         [Column(TypeName = "varchar(100)")]
         public string Name { get; set; }
         [Required]
-        public bool Active { get; set; }
+        public bool Active { get; set; } = true;
         public User NextToRollDice { get; set; }
 
     }
