@@ -3,7 +3,7 @@
 Use this file to fill in your documentation
 
 ## Scenario 1
-1. Choose 1 (start new) or 2 (load saved game) > 1
+1. Choose 1 (start new), 2 (load saved game) or 3 (show user statistics) > 1
 2. Enter number of players > 2
 3. Who will be player 1? > Lasse
 4. Who will be player 2? > Nils
@@ -30,7 +30,7 @@ Use this file to fill in your documentation
 19. Nils, moved his last piece into the goal and won the game!
 
 ## Scenario 2
-1. Choose 1 (start new) or 2 (load saved game) > 2
+1. Choose 1 (start new), 2 (load saved game) or 3 (show user statistics) > 2
 2. Write the name of the game: spel1
 3. Loading spel1...
 4. Nils, it's your turn. Enter 'r' to roll the dice > r
