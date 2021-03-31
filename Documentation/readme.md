@@ -55,8 +55,6 @@ Columns:
 Columns:
 * PieceID
 * Color
-* StartPosition
-* EndPosition
 
 ### Table: Game
 Columns:
