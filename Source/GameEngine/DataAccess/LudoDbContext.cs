@@ -13,5 +13,10 @@ namespace GameEngine.DataAccess
         public DbSet<Game> Games { get; set; }
         public DbSet<GamePlayers> GamePlayers { get; set; }
         public DbSet<GamePosition> GamePositions { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlServer(@"Server=localhost;Database=LudoDb;User Id=sa;Password=YourStrong@Passw0rd");
+        }
     }
 }

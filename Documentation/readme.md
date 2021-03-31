@@ -51,10 +51,6 @@ Columns:
 * GamesWon
 * GamesLost
 
-### Table: Pieces
-Columns:
-* PieceID
-* Color
 
 ### Table: Game
 Columns:
@@ -68,6 +64,6 @@ Columns:
 * ID
 * GameID
 * UserID
-* PieceID
+* Color
 * Position
 
