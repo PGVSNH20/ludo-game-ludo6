@@ -6,7 +6,7 @@ using System.Text;
 
 namespace GameEngine.DataAccess
 {
-    class LudoDbContext : DbContext
+    public class LudoDbContext : DbContext
     {
         public DbSet<User> Users { get; set; }
         public DbSet<Game> Games { get; set; }

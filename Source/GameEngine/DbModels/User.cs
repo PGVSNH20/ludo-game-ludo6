@@ -6,7 +6,7 @@ using System.Text;
 
 namespace GameEngine.Models
 {
-    class User
+    public class User
     {
         public int UserId { get; set; }
         [Required]

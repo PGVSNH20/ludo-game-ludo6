@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GameEngine.Models
 {
-    class GamePosition
+    public class GamePosition
     {
         public int GamePositionId { get; set; }
 
@@ -19,6 +19,6 @@ namespace GameEngine.Models
         public string Color { get; set; }
 
         [Required]
-        public double Position { get; set; }
+        public double Position { get; set; } = 0;
     }
 }

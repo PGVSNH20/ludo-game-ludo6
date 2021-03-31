@@ -20,7 +20,9 @@ namespace LudoConsole
 
                 switch (choice)
                 {
-                    case 1: game.Create();
+                    case 1:
+                        game.Create();
+                        game.Run();
                         break;
                     case 2: game.Load();
                         break;
