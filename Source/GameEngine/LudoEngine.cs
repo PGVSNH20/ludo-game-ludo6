@@ -57,6 +57,25 @@ namespace GameEngine
             }
         }
 
+        // Let's the user choose between the given list of pieces and returns that object
+        private Piece ChoosePiece(List<Piece> pieces)
+        {
+            Console.WriteLine("Which piece do you want to move?");
+            for (int i = 0; i < pieces.Count; i++)
+            {
+                Console.WriteLine($"{i}: Piece at position {pieces[i].Position}");
+            }
+            int choice = int.Parse(Console.ReadLine());
+            return pieces[choice];
+        }
+
+        // Uses the parameters to move a piece a certain number of steps
+        private void MovePiece(Piece piece, int moves)
+        {
+            piece.Position = piece.Position == 0 ? 1 : piece.Position += moves;
+            Console.WriteLine($"Moved piece to position {piece.Position}!");
+        }
+
         public void Run()
         {
             while(winner == null)
@@ -72,47 +91,29 @@ namespace GameEngine
                         int moves = ThrowDice();
                         Console.WriteLine($"You got a {moves}!");
 
-                        if(moves == 6 && PiecesInNest.Count == 4)
+                        if (moves == 6)
                         {
-                            player.Pieces[0].Position = 1;
-                            Console.WriteLine("Moved your first piece out of your nest!");
+                            // If all pieces are in the nest, automatically move one out
+                            if (PiecesInNest.Count == 4)
+                                MovePiece(player.Pieces[0], 1);
+                            // If there are pieces both in the nest and in play, let the user choose one of all pieces and move it.
+                            else
+                                MovePiece(ChoosePiece(player.Pieces), moves);
+
                             continue;
                         }
-                        if(moves == 6 && PiecesInNest.Count > 0)
-                        {
-                            Console.WriteLine("Which piece do you want to move?");
-                            for(int i = 0; i < player.Pieces.Count; i++)
-                            {
-                                Console.WriteLine($"{i}: Piece at position {player.Pieces[i].Position}");
-                            }
-                            int choice = int.Parse(Console.ReadLine());
-                            if (player.Pieces[choice].Position == 0)
-                                player.Pieces[choice].Position++;
-                            else
-                                player.Pieces[choice].Position += moves;
-                            Console.WriteLine($"Moved piece to position {player.Pieces[choice].Position}.");
 
-                        }
-                        else if (PiecesInPlay.Count > 0 && PiecesInPlay.Count < 2)
-                        {
-                            PiecesInPlay[0].Position += moves;
-                            Console.WriteLine($"Moved piece to position { PiecesInPlay[0].Position }");
-                        }
-                        else if (PiecesInPlay.Count > 0)
-                        {
-                            Console.WriteLine("Which piece do you want to move?");
-                            for (int i = 0; i < PiecesInPlay.Count; i++)
-                            {
-                                Console.WriteLine($"{i}: Piece at position {PiecesInPlay[i].Position}");
-                            }
-                            int choice = int.Parse(Console.ReadLine());
-                            PiecesInPlay[choice].Position += moves;
-                            Console.WriteLine($"Moved piece to position {PiecesInPlay[choice].Position}.");
-                        }
-                        if(PiecesInPlay.Count > 0)
-                        {
+                        // The code below only executes if 'moves' is not equal to 6
 
+                        // If there's only one piece in play, automatically move the piece
+                        if (PiecesInPlay.Count == 1)
+                        {
+                            MovePiece(PiecesInPlay[0], moves);
+                            continue;
                         }
+                        // If there are multiple pieces in play, let the user choose between those pieces and move it.
+                        if (PiecesInPlay.Count > 1)
+                            MovePiece(ChoosePiece(PiecesInPlay), moves);
                     }
                 }
             }
