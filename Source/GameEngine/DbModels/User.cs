@@ -12,7 +12,7 @@ namespace GameEngine.Models
         [Required]
         [Column(TypeName = "varchar(100)")]
         public string Name { get; set; }
-        public int GamesWon { get; set; }
-        public int GamesLost { get; set; }
+        public int? GamesWon { get; set; }
+        public int? GamesLost { get; set; }
     }
 }
