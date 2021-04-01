@@ -25,3 +25,10 @@
 * Edited the code in Run to make use of the methods above.
 
 ___
+**2021-04-01**
+
+## 
+-We used the time before lunch for refactoring.
+- Reason: We wanted to separate all Console-code from the GameEngine.  
+- We continued to develope the gametable and how the pieces moves.
+___
