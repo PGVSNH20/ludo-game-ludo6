@@ -14,5 +14,15 @@ namespace LudoTests
             var user = engine.GetUserByName("nonexistenuser");
             Assert.Null(user);
         }
+
+        [Fact]
+        public void ExpectNumber1to6WhenRollDice()
+        {
+            LudoEngine engine = new LudoEngine();
+            var diceRoll = engine.ThrowDice();
+
+            Assert.True(diceRoll >= 1 &&  diceRoll <= 6);
+            
+        }
     }
 }

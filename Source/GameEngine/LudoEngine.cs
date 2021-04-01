@@ -124,7 +124,7 @@ namespace GameEngine
             
         }
 
-        private int ThrowDice()
+        public int ThrowDice()
         {
             return random.Next(1, 7);
         }
