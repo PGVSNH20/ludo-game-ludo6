@@ -12,7 +12,6 @@ namespace GameEngine
         private LudoDbContext context;
         public List<Player> Players { get; set; }
         private Random random;
-        private Player winner = null;
 
         public LudoEngine()
         {
@@ -36,8 +35,40 @@ namespace GameEngine
         // Uses the parameters to move a piece a certain number of steps
         public void MovePiece(Piece piece, int moves)
         {
-            piece.Position = piece.Position == 0 ? 1 : piece.Position += moves;
-            Console.WriteLine($"Moved piece to position {piece.Position}!");
+            var redStart = 1;
+            var greenStart = 11;
+            var yellowStart = 21;
+            var blueStart = 31;
+
+            if (piece.Position == 0)
+            {
+                switch (piece.Color)
+                {
+                    case "Red": piece.Position = redStart;
+                        break;
+                    case "Green": piece.Position = greenStart;
+                        break;
+                    case "Yellow": piece.Position = yellowStart;
+                        break;
+                    case "Blue": piece.Position = blueStart;
+                        break;
+                    default:
+                        break;
+                }
+                piece.MovesCount = 1;
+            }
+            else
+            {
+                if (piece.Position + moves <= 40)
+                    piece.Position += moves;
+                else
+                {
+                    piece.Position = (piece.Position + moves) - 40;
+                }
+                piece.MovesCount += moves;
+            }
+
+            Console.WriteLine($"Movescount: {piece.MovesCount}");
         }
 
         public List<Piece> GetPiecesInNest(Player player)
@@ -58,18 +89,6 @@ namespace GameEngine
         public int ThrowDice()
         {
             return random.Next(1, 7);
-        }
-
-        public void GetStatistics()
-        {
-            Console.Write("Username? ");
-            var name = Console.ReadLine();
-
-            var user = GetUserByName(name);
-            if (user != null)
-                Console.WriteLine($"You've won {user.GamesWon} games and lost {user.GamesLost}.");
-            else
-                Console.WriteLine("Couldn't find user");
         }
 
         public User GetUserByName(string name)

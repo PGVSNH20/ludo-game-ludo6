@@ -1,4 +1,5 @@
 ﻿using GameEngine;
+using GameEngine.Models;
 using System;
 using System.Collections.Generic;
 
@@ -33,7 +34,15 @@ namespace LudoConsole
                         break;
                     case 2: game.Load();
                         break;
-                    case 3: game.GetStatistics();
+                    case 3:
+                        var name = AskForUsername();
+                        var user = game.GetUserByName(name);
+                        if (user != null)
+                        {
+                            ShowStatistics(user);
+                        }
+                        else
+                            Console.WriteLine("Couldn't find user");
                         break;
                     default:
                         break;
@@ -43,35 +52,16 @@ namespace LudoConsole
 
         }
 
-        private static void HandleMoves(int moves, Player player, LudoEngine game)
+        private static string AskForUsername()
         {
-            List<Piece> PiecesInNest = game.GetPiecesInNest(player);
-            List<Piece> PiecesInPlay = game.GetPiecesInPlay(player);
+            Console.Write("Username? ");
+            var name = Console.ReadLine();
+            return name;
+        }
 
-            if (moves == 6)
-            {
-                // If all piece are in the nest, automatically move one out
-                if (PiecesInNest.Count == 4)
-                {
-                    game.MovePiece(player.Pieces[0], 1);
-                }
-                // If there are pieces both in the nest and in play, let the user choose one of all pieces and move it.
-                else
-                    game.MovePiece(LetPlayerChoosePiece(player.Pieces, game), moves);
-            }
-            else
-            {
-                // If there's only one piece in play, automatically move the piece
-                if (PiecesInPlay.Count == 1)
-                {
-                    game.MovePiece(PiecesInPlay[0], moves);
-                }
-                // If there are multiple pieces in play, let the user choose between those pieces and move it.
-                if (PiecesInPlay.Count > 1)
-                {
-                    game.MovePiece(LetPlayerChoosePiece(PiecesInPlay, game), moves);
-                }
-            }
+        private static void ShowStatistics(User user)
+        {
+            Console.WriteLine($"You've won {user.GamesWon} games and lost {user.GamesLost}!");
         }
 
         private static Piece LetPlayerChoosePiece(List<Piece> pieces, LudoEngine game)
@@ -93,7 +83,7 @@ namespace LudoConsole
             if (input == "r")
             {
                 int moves = game.ThrowDice();
-                Console.WriteLine($"You got a {moves}!");
+                Console.WriteLine($"{player.Name} got a {moves}!");
                 return moves;
             }
             return 0;
@@ -135,6 +125,45 @@ namespace LudoConsole
 
             }
             
+        }
+
+        private static void MovePlayerPiece(Piece piece, int moves, LudoEngine game)
+        {
+            game.MovePiece(piece, moves);
+            Console.WriteLine($"Moved piece to position {piece.Position}!");
+        }
+
+        private static void HandleMoves(int moves, Player player, LudoEngine game)
+        {
+            List<Piece> PiecesInNest = game.GetPiecesInNest(player);
+            List<Piece> PiecesInPlay = game.GetPiecesInPlay(player);
+
+            if (moves == 6)
+            {
+                // If all piece are in the nest, automatically move one out
+                if (PiecesInNest.Count == 4)
+                {
+                    MovePlayerPiece(player.Pieces[0], 1, game);
+                }
+                // If there are pieces both in the nest and in play, let the user choose one of all pieces and move it.
+                else
+                    MovePlayerPiece(LetPlayerChoosePiece(player.Pieces, game), moves, game);
+            }
+            else
+            {
+                // If there's only one piece in play, automatically move the piece
+                if (PiecesInPlay.Count == 1)
+                {
+                    MovePlayerPiece(PiecesInPlay[0], moves, game);
+                }
+                // If there are multiple pieces in play, let the user choose between those pieces and move it.
+                if (PiecesInPlay.Count > 1)
+                {
+                    MovePlayerPiece(LetPlayerChoosePiece(PiecesInPlay, game), moves, game);
+                }
+            }
+
+            Console.WriteLine();
         }
     }
 
