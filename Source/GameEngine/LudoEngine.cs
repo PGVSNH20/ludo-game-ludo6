@@ -3,6 +3,7 @@ using GameEngine.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace GameEngine
@@ -11,6 +12,7 @@ namespace GameEngine
     {
         private LudoDbContext context;
         public List<Player> Players { get; set; }
+        public Player CurrentPlayer { get; set; }
         private Random random;
 
         public LudoEngine()
@@ -20,63 +22,114 @@ namespace GameEngine
             Players = new List<Player>();
         }
 
-        public void AddPlayer(string color, string name)
+        public void AddPlayer(Type pieceType, string name)
         {
             Player player = new Player() { Name = name };
-            player.Pieces = new List<Piece>() {
-                new Piece() { Color = color },
-                new Piece() { Color = color },
-                new Piece() { Color = color },
-                new Piece() { Color = color }
+            player.Pieces = new List<IPiece>() {
+                (IPiece)Activator.CreateInstance(pieceType),
+                (IPiece)Activator.CreateInstance(pieceType),
+                (IPiece)Activator.CreateInstance(pieceType),
+                (IPiece)Activator.CreateInstance(pieceType)
             };
             Players.Add(player);
+
+            if (Players.Count == 1)
+                CurrentPlayer = Players[0];
+        }
+
+        public List<Type> GetPieceTypes()
+        {
+            var type = typeof(IPiece);
+            Assembly IPieceAssembly = type.Assembly;
+            return IPieceAssembly.GetTypes().Where(p => type.IsAssignableFrom(p) && !p.IsInterface).ToList();
+
+        }
+
+        public bool CheckIfEnteringGoal(IPiece piece, int moves)
+        {
+            int nextPosition = piece.Position + moves;
+
+            if (nextPosition >= piece.EndPosition) return true;
+            return false;
+        }
+
+        public IPiece FindCollidingPiece(int position)
+        {
+            IPiece collidingPiece = null;
+
+            foreach(var player in Players)
+            {
+                collidingPiece = player.Pieces.Find(p => p.Position == position); 
+            }
+            return collidingPiece;
+        }
+
+        public bool PieceIsEnemy(IPiece piece)
+        {
+            return piece.GetType() != CurrentPlayer.Pieces[0].GetType();
+        }
+
+        public List<IPiece> GetMoveablePieces(int moves)
+        {
+            List<IPiece> moveablePieces = new List<IPiece>();
+
+            foreach(var piece in CurrentPlayer.Pieces)
+            {
+                if (moves == 6)
+                {
+                    moveablePieces.Add(piece);
+                }
+                else
+                {
+                    if (PieceIsInPlay(piece))
+                        moveablePieces.Add(piece);
+                }
+            }
+
+            return moveablePieces;
         }
 
         // Uses the parameters to move a piece a certain number of steps
-        public void MovePiece(Piece piece, int moves)
+        public bool MovePiece(IPiece piece, int moves)
         {
-            var redStart = 1;
-            var greenStart = 11;
-            var yellowStart = 21;
-            var blueStart = 31;
-
-            if (piece.Position == 0)
+            if (CheckIfEnteringGoal(piece, moves))
             {
-                switch (piece.Color)
-                {
-                    case "Red": piece.Position = redStart;
-                        break;
-                    case "Green": piece.Position = greenStart;
-                        break;
-                    case "Yellow": piece.Position = yellowStart;
-                        break;
-                    case "Blue": piece.Position = blueStart;
-                        break;
-                    default:
-                        break;
-                }
-                piece.MovesCount = 1;
+                piece.Position = piece.EndPosition;
             }
-            else
+
+            var collidingPiece = FindCollidingPiece(piece.Position + moves);
+
+            if (collidingPiece != null && !PieceIsEnemy(collidingPiece))
+                return false;
+
+            if (collidingPiece != null && PieceIsEnemy(collidingPiece))
             {
-                if (piece.Position + moves <= 40)
-                    piece.Position += moves;
+                collidingPiece.Position = 0;
+            }
+
+            if (collidingPiece == null)
+            {
+                if (piece.Position == 0 && moves == 6)
+                    piece.Position = piece.StartPosition;
                 else
-                {
-                    piece.Position = (piece.Position + moves) - 40;
-                }
-                piece.MovesCount += moves;
+                    piece.Position += moves;
             }
 
-            Console.WriteLine($"Movescount: {piece.MovesCount}");
+            return true;
+            
         }
 
-        public List<Piece> GetPiecesInNest(Player player)
+        public bool PieceIsInPlay(IPiece piece)
+        {
+            return piece.Position > 0 && piece.Position < piece.EndPosition;
+        }
+
+        public List<IPiece> GetPiecesInNest(Player player)
         {
             return player.Pieces.Where(p => p.Position == 0).ToList();
         }
 
-        public List<Piece> GetPiecesInPlay(Player player)
+        public List<IPiece> GetPiecesInPlay(Player player)
         {
             return player.Pieces.Where(p => p.Position != 0).ToList();
         }

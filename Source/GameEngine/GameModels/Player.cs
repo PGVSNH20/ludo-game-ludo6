@@ -5,7 +5,7 @@ namespace GameEngine
 {
     public class Player
     {
-        public List<Piece> Pieces { get; set; }
+        public List<IPiece> Pieces { get; set; }
         public string Name { get; set; }
 
     }

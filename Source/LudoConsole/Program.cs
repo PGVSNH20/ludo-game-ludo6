@@ -27,7 +27,12 @@ namespace LudoConsole
                             foreach (var player in game.Players)
                             {
                                 int moves = LetPlayerRollDice(player, game);
-                                HandleMoves(moves, player, game);
+                                var moveablePiece = game.GetMoveablePieces(moves);
+                                if (moveablePiece.Count > 0)
+                                {
+                                    var pieceToMove = LetPlayerChoosePiece(moveablePiece, game);
+                                    MovePiece(moves, pieceToMove, game);
+                                }
 
                             }
                         }
@@ -64,15 +69,15 @@ namespace LudoConsole
             Console.WriteLine($"You've won {user.GamesWon} games and lost {user.GamesLost}!");
         }
 
-        private static Piece LetPlayerChoosePiece(List<Piece> pieces, LudoEngine game)
+        private static IPiece LetPlayerChoosePiece(List<IPiece> moveablePieces, LudoEngine game)
         {
             Console.WriteLine("Which piece do you want to move?");
-            for (int i = 0; i < pieces.Count; i++)
+            for (int i = 0; i < moveablePieces.Count; i++)
             {
-                Console.WriteLine($"{i}: Piece at position {pieces[i].Position}");
+                Console.WriteLine($"{i}: Piece at position {moveablePieces[i].Position}");
             }
             int choice = int.Parse(Console.ReadLine());
-            return pieces[choice];
+            return moveablePieces[choice];
         }
 
         private static int LetPlayerRollDice(Player player, LudoEngine game)
@@ -117,53 +122,36 @@ namespace LudoConsole
         { 
             for(int i = 0; i < numOfPlayers; i++)
             {
-                string[] colors = { "Red", "Blue", "Green", "Yellow" };
-                Console.Write($"Enter username for {colors[i]}: ");
+                var types = game.GetPieceTypes();
+
+                Console.Write($"Enter username for {types[i].Name.Replace("Piece", "")}: ");
                 var name = Console.ReadLine();
 
-                game.AddPlayer(colors[i], name);
+                game.AddPlayer(types[i], name);
 
             }
             
         }
 
-        private static void MovePlayerPiece(Piece piece, int moves, LudoEngine game)
+        private static void MovePiece(int moves, IPiece piece, LudoEngine game)
         {
-            game.MovePiece(piece, moves);
-            Console.WriteLine($"Moved piece to position {piece.Position}!");
-        }
+            bool couldMove = game.MovePiece(piece, moves);
 
-        private static void HandleMoves(int moves, Player player, LudoEngine game)
-        {
-            List<Piece> PiecesInNest = game.GetPiecesInNest(player);
-            List<Piece> PiecesInPlay = game.GetPiecesInPlay(player);
-
-            if (moves == 6)
+            if (couldMove)
             {
-                // If all piece are in the nest, automatically move one out
-                if (PiecesInNest.Count == 4)
-                {
-                    MovePlayerPiece(player.Pieces[0], 1, game);
-                }
-                // If there are pieces both in the nest and in play, let the user choose one of all pieces and move it.
-                else
-                    MovePlayerPiece(LetPlayerChoosePiece(player.Pieces, game), moves, game);
+                if (game.CheckIfEnteringGoal(piece, moves))
+                    Console.WriteLine($"{game.CurrentPlayer.Name} entered goal with a piece!");
+
+                var collidingPiece = game.FindCollidingPiece(piece.Position + moves);
+                if (collidingPiece != null && game.PieceIsEnemy(collidingPiece))
+                    Console.WriteLine($"{game.CurrentPlayer.Name} knocked an enemy piece!");
+                if (collidingPiece == null)
+                    Console.WriteLine($"{game.CurrentPlayer.Name} moved a piece to position {piece.Position}");
             }
             else
             {
-                // If there's only one piece in play, automatically move the piece
-                if (PiecesInPlay.Count == 1)
-                {
-                    MovePlayerPiece(PiecesInPlay[0], moves, game);
-                }
-                // If there are multiple pieces in play, let the user choose between those pieces and move it.
-                if (PiecesInPlay.Count > 1)
-                {
-                    MovePlayerPiece(LetPlayerChoosePiece(PiecesInPlay, game), moves, game);
-                }
+                Console.WriteLine("Sorry, can't do that");
             }
-
-            Console.WriteLine();
         }
     }
 
