@@ -11,7 +11,6 @@ namespace LudoConsole
         {
             int choice;
             LudoEngine game = new LudoEngine();
-            Player winner = null;
 
             do
             {
@@ -22,22 +21,10 @@ namespace LudoConsole
                     case 1:
                         int numberOfPlayers = AskForNumberOfPlayers();
                         AddPlayers(numberOfPlayers, game);
-                        while(winner == null)
-                        {
-                            foreach (var player in game.Players)
-                            {
-                                int moves = LetPlayerRollDice(player, game);
-                                var moveablePiece = game.GetMoveablePieces(moves);
-                                if (moveablePiece.Count > 0)
-                                {
-                                    var pieceToMove = LetPlayerChoosePiece(moveablePiece, game);
-                                    MovePiece(moves, pieceToMove, game);
-                                }
-
-                            }
-                        }
+                        Play(game);
                         break;
-                    case 2: game.Load();
+                    case 2:
+                        game.Load();
                         break;
                     case 3:
                         var name = AskForUsername();
@@ -57,6 +44,30 @@ namespace LudoConsole
 
         }
 
+        private static void Play(LudoEngine game)
+        {
+            bool gameHasWinner = false;
+            while (!gameHasWinner)
+            {
+                int moves = LetPlayerRollDice(game.CurrentPlayer, game);
+                var moveablePiece = game.GetMoveablePieces(moves);
+                if (moveablePiece.Count > 0)
+                {
+                    var pieceToMove = LetPlayerChoosePiece(moveablePiece, game);
+                    if (pieceToMove != null)
+                        MovePiece(moves, pieceToMove, game);
+                }
+
+                gameHasWinner = game.HasWinner();
+
+                game.SwitchPlayer();
+
+
+            }
+
+            Console.WriteLine($"{game.Winner.Name} won the game!");
+        }
+
         private static string AskForUsername()
         {
             Console.Write("Username? ");
@@ -71,12 +82,23 @@ namespace LudoConsole
 
         private static IPiece LetPlayerChoosePiece(List<IPiece> moveablePieces, LudoEngine game)
         {
-            Console.WriteLine("Which piece do you want to move?");
-            for (int i = 0; i < moveablePieces.Count; i++)
+            if (moveablePieces.Count == 0)
+                return null;
+
+            int choice;
+            do
             {
-                Console.WriteLine($"{i}: Piece at position {moveablePieces[i].Position}");
-            }
-            int choice = int.Parse(Console.ReadLine());
+                Console.WriteLine("Which piece do you want to move?");
+                for (int i = 0; i < moveablePieces.Count; i++)
+                {
+                    Console.WriteLine($"{i}: Piece at position {moveablePieces[i].Position}");
+                }
+
+                var choiceIsNumber = int.TryParse(Console.ReadLine(), out choice);
+                choice = choiceIsNumber ? choice : -1;
+
+            } while (choice < 0 || choice > moveablePieces.Count - 1);
+
             return moveablePieces[choice];
         }
 
@@ -139,13 +161,13 @@ namespace LudoConsole
 
             if (couldMove)
             {
-                if (game.CheckIfEnteringGoal(piece, moves))
+                if (game.PieceIsInGoal(piece))
                     Console.WriteLine($"{game.CurrentPlayer.Name} entered goal with a piece!");
 
                 var collidingPiece = game.FindCollidingPiece(piece.Position + moves);
                 if (collidingPiece != null && game.PieceIsEnemy(collidingPiece))
-                    Console.WriteLine($"{game.CurrentPlayer.Name} knocked an enemy piece!");
-                if (collidingPiece == null)
+                    Console.WriteLine($"{game.CurrentPlayer.Name} knocked away a {collidingPiece.GetType().Name.Replace("Piece", "")} piece!");
+                if (collidingPiece == null && !game.PieceIsInGoal(piece))
                     Console.WriteLine($"{game.CurrentPlayer.Name} moved a piece to position {piece.Position}");
             }
             else

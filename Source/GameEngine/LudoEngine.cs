@@ -13,6 +13,8 @@ namespace GameEngine
         private LudoDbContext context;
         public List<Player> Players { get; set; }
         public Player CurrentPlayer { get; set; }
+        public Player Winner { get; set; }
+
         private Random random;
 
         public LudoEngine()
@@ -53,13 +55,18 @@ namespace GameEngine
             return false;
         }
 
+        public bool PieceIsInGoal(IPiece piece)
+        {
+            return piece.Position >= piece.EndPosition;
+        }
+
         public IPiece FindCollidingPiece(int position)
         {
             IPiece collidingPiece = null;
 
             foreach(var player in Players)
             {
-                collidingPiece = player.Pieces.Find(p => p.Position == position); 
+                collidingPiece = player.Pieces.Find(p => p.Position == position && p.EndPosition == p.Position); 
             }
             return collidingPiece;
         }
@@ -77,7 +84,8 @@ namespace GameEngine
             {
                 if (moves == 6)
                 {
-                    moveablePieces.Add(piece);
+                    if (PieceIsInPlay(piece) || PieceIsInNest(piece))
+                        moveablePieces.Add(piece);
                 }
                 else
                 {
@@ -92,10 +100,6 @@ namespace GameEngine
         // Uses the parameters to move a piece a certain number of steps
         public bool MovePiece(IPiece piece, int moves)
         {
-            if (CheckIfEnteringGoal(piece, moves))
-            {
-                piece.Position = piece.EndPosition;
-            }
 
             var collidingPiece = FindCollidingPiece(piece.Position + moves);
 
@@ -115,6 +119,11 @@ namespace GameEngine
                     piece.Position += moves;
             }
 
+            if (PieceIsInGoal(piece))
+            {
+                piece.Position = piece.EndPosition;
+            }
+
             return true;
             
         }
@@ -122,6 +131,11 @@ namespace GameEngine
         public bool PieceIsInPlay(IPiece piece)
         {
             return piece.Position > 0 && piece.Position < piece.EndPosition;
+        }
+
+        public bool PieceIsInNest(IPiece piece)
+        {
+            return piece.Position == 0;
         }
 
         public List<IPiece> GetPiecesInNest(Player player)
@@ -149,6 +163,19 @@ namespace GameEngine
             try {
                 return context.Users.Where(u => u.Name == name).Single();
             } catch { return null; }
+        }
+
+        public void SwitchPlayer()
+        {
+            int currentPlayerIndex = Players.FindIndex(pl => pl.Name == CurrentPlayer.Name);
+            CurrentPlayer = Players[(currentPlayerIndex + 1) >= Players.Count ? 0 : currentPlayerIndex + 1];
+        }
+
+        public bool HasWinner()
+        {
+            var winner = Players.Find(pl => pl.Pieces.TrueForAll(p => p.Position >= p.EndPosition));
+            Winner = winner;
+            return winner == null ? false : true;
         }
     }
 }
