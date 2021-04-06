@@ -1,4 +1,4 @@
-# 2021-03-31
+**2021-03-31**
 
 ## We started the day with finishing the planning we started yesterday.
 
@@ -31,4 +31,12 @@ ___
 -We used the time before lunch for refactoring.
 - Reason: We wanted to separate all Console-code from the GameEngine.  
 - We continued to develope the gametable and how the pieces moves.
+___
+
+**2021-04-06**
+
+## 
+* We agreed on a change in the modell by creating classes for each color of Pieces.
+* And also adding an IPiece interface. 
+* We are currently working on getting the pieces to finish at the correct position. 
 ___
