@@ -40,3 +40,20 @@ ___
 * And also adding an IPiece interface. 
 * We are currently working on getting the pieces to finish at the correct position. 
 ___
+
+**2021-04-07**
+
+Removed a test that was testing against DB
+Added some new test:
+- WhenAddingNewPlayer_ExpectItToHave4Pieces()
+- WhenAddingNewPlayer_ExpectItToHavePiecesOfTheCorrectType()
+- GivenAPlayerHasAllPiecesInNest_WhenDiceRollResultsInLessThan6_Expect0MoveablePieces()
+- //-WhenTwoPlayersAddedGame_ExpectItToBeAddedToDatabase()\\ Not completed
+
+Started working on the Db connection.
+Methods for:
+- Save
+- Update
+- Load
+
+___
