@@ -4,7 +4,7 @@ using System.Text;
 
 namespace GameEngine.GameModels
 {
-    class GreenPiece : IPiece
+    public class GreenPiece : IPiece
     {
         public int Position { get; set; }
         public int StartPosition { get; set; } = 11;
