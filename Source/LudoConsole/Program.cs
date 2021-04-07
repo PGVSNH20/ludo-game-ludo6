@@ -104,7 +104,7 @@ namespace LudoConsole
             return moveablePieces[choice];
         }
 
-        private static int LetPlayerRollDice(Player player, LudoEngine game)
+        private static int LetPlayerRollDice(User player, LudoEngine game)
         {
             Console.WriteLine($"{player.Name} it's your turn. Enter 'r' to roll the dice.");
             var input = Console.ReadLine();
