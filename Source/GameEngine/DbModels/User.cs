@@ -14,5 +14,7 @@ namespace GameEngine.Models
         public string Name { get; set; }
         public int? GamesWon { get; set; }
         public int? GamesLost { get; set; }
+        [NotMapped]
+        public List<IPiece> Pieces { get; set; }
     }
 }

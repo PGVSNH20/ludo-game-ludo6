@@ -1,4 +1,5 @@
 ﻿using GameEngine;
+using GameEngine.DataAccess;
 using GameEngine.Models;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,8 @@ namespace LudoConsole
         static void Main(string[] args)
         {
             int choice;
-            LudoEngine game = new LudoEngine();
+            LudoDbContext dbContext = new LudoDbContext();
+            LudoEngine game = new LudoEngine(dbContext, "spelnamn");
 
             do
             {

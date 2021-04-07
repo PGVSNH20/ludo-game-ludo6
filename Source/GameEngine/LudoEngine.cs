@@ -11,22 +11,24 @@ namespace GameEngine
     public class LudoEngine
     {
         private LudoDbContext context;
-        public List<Player> Players { get; set; }
-        public Player CurrentPlayer { get; set; }
-        public Player Winner { get; set; }
+        public List<User> Players { get; set; }
+        public User CurrentPlayer { get; set; }
+        public User Winner { get; set; }
+        public string GameName { get; set; }
 
         private Random random;
 
-        public LudoEngine()
+        public LudoEngine(LudoDbContext dbContext, string gameName)
         {
-            context = new LudoDbContext();
+            context = dbContext;
+            GameName = gameName;
             random = new Random();
-            Players = new List<Player>();
+            Players = new List<User>();
         }
 
         public void AddPlayer(Type pieceType, string name)
         {
-            Player player = new Player() { Name = name };
+            User player = new User() { Name = name };
             player.Pieces = new List<IPiece>() {
                 (IPiece)Activator.CreateInstance(pieceType),
                 (IPiece)Activator.CreateInstance(pieceType),
@@ -35,8 +37,46 @@ namespace GameEngine
             };
             Players.Add(player);
 
+            if (Players.Count == 2)
+                SaveGame();
+
             if (Players.Count == 1)
                 CurrentPlayer = Players[0];
+        }
+
+        private void SaveGame()
+        {
+
+            AddNewPlayersToDatabase();
+
+            context..Games.Add(new Game() { Name = GameName, Active = true, NextToRollDice = CurrentPlayer });
+            context.SaveChanges();
+
+
+        }
+
+        private void AddNewPlayersToDatabase()
+        {
+            foreach (var player in Players)
+            {
+                // If the user is not in the database, add the user
+                if (!UserExistsInDatabase(player.Name))
+                {
+                    context.Users.Add(new User() { Name = player.Name });
+                }
+            }
+        }
+
+        private bool UserExistsInDatabase(string name)
+        {
+            try
+            {
+                var user = context.Users.Where(u => u.Name == name).Single();
+                return true;
+            } catch
+            {
+                return false;
+            }
         }
 
         public List<Type> GetPieceTypes()
@@ -124,8 +164,15 @@ namespace GameEngine
                 piece.Position = piece.EndPosition;
             }
 
+            UpdateGame();
+
             return true;
             
+        }
+
+        private void UpdateGame()
+        {
+
         }
 
         public bool PieceIsInPlay(IPiece piece)

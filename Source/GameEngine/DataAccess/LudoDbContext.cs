@@ -8,9 +8,9 @@ namespace GameEngine.DataAccess
 {
     public class LudoDbContext : DbContext
     {
-        public DbSet<User> Users { get; set; }
-        public DbSet<Game> Games { get; set; }
-        public DbSet<GamePosition> GamePositions { get; set; }
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Game> Games { get; set; }
+        public virtual DbSet<GamePosition> GamePositions { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
