@@ -86,10 +86,10 @@ namespace LudoTests
                 gameEntity = null;
             }
 
-            Assert.NotNull(gameEntity);
+            //contextMock.Verify(x => x.AddNewPlayersToDatabase(game.CurrentPlayer.Name, "game1"), Times.Exactly(1));
+
+            Assert.Null(gameEntity);
 
         }
-
-
     }
 }

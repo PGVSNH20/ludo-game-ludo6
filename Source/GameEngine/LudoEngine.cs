@@ -49,7 +49,7 @@ namespace GameEngine
 
             AddNewPlayersToDatabase();
 
-            context..Games.Add(new Game() { Name = GameName, Active = true, NextToRollDice = CurrentPlayer });
+            context.Games.Add(new Game() { Name = GameName, Active = true, NextToRollDice = CurrentPlayer });
             context.SaveChanges();
 
 
