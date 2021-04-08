@@ -61,10 +61,8 @@ ___
 **2021-04-08**
 
 - Continued to develop the methods talking to the Db.
-
 - Added AddedPiece
 - Added AddedPieceDb
-
 - AskForGameName : Checking if name allready exist in Db
-
 - SwitchPlayer() : Updated with an Db update/save for "NextToRollDice" in Games table.
+- Added logic to update the 'WinnerUserId' and 'Active' columns in Game-table and 

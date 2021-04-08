@@ -200,10 +200,10 @@ namespace GameEngine
 
             if (PieceIsInGoal(piece))
             {
-                gamePosition.Position = piece.EndPosition;
+                gamePosition.Position = 100;
                 context.GamePositions.Update(gamePosition);
 
-                piece.Position = piece.EndPosition;
+                piece.Position = 100;
             }
 
             return true;
@@ -265,7 +265,15 @@ namespace GameEngine
         {
             var winner = Players.Find(pl => pl.Pieces.TrueForAll(p => p.Position >= p.EndPosition));
             Winner = winner;
-            return winner == null ? false : true;
+            if (Winner != null)
+            {
+                Game.Winner = Winner;
+                Game.Active = false;
+                context.Games.Update(Game);
+                // SaveChanges needed?
+                context.SaveChanges();
+            }
+            return winner != null;
         }
 
         public static bool GameExists(string name, LudoDbContext context)
@@ -274,7 +282,7 @@ namespace GameEngine
             try
             {
                 Game game = context.Games.Where(g => g.Name.ToLower() == name.ToLower()).Single();
-                return game == null ? false : true;
+                return game != null;
             }
             catch { return false; }
         }
