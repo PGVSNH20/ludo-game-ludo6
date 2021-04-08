@@ -12,7 +12,7 @@ namespace LudoConsole
         {
             int choice;
             LudoDbContext dbContext = new LudoDbContext();
-            LudoEngine game = new LudoEngine(dbContext, "spelnamn");
+            LudoEngine game;
 
             do
             {
@@ -21,14 +21,18 @@ namespace LudoConsole
                 switch (choice)
                 {
                     case 1:
+                        string gameName = AskForGameName(dbContext);
+                        game = new LudoEngine(dbContext, gameName);
                         int numberOfPlayers = AskForNumberOfPlayers();
                         AddPlayers(numberOfPlayers, game);
                         Play(game);
                         break;
                     case 2:
-                        game.Load();
+                        game = new LudoEngine(dbContext, "");
+                        game.Load("");
                         break;
                     case 3:
+                        game = new LudoEngine(dbContext, "");
                         var name = AskForUsername();
                         var user = game.GetUserByName(name);
                         if (user != null)
@@ -44,6 +48,17 @@ namespace LudoConsole
             }
             while (choice != 9);
 
+        }
+
+        private static string AskForGameName(LudoDbContext context)
+        {
+            string input;
+            do {
+                Console.Write("What should the game be called? ");
+                input = Console.ReadLine();
+            } while (LudoEngine.GameExists(input, context));
+
+            return input;
         }
 
         private static void Play(LudoEngine game)
@@ -147,13 +162,35 @@ namespace LudoConsole
             for(int i = 0; i < numOfPlayers; i++)
             {
                 var types = game.GetPieceTypes();
+                bool runLoop = true;
+                do
+                {
 
-                Console.Write($"Enter username for {types[i].Name.Replace("Piece", "")}: ");
-                var name = Console.ReadLine();
+                    Console.Write($"Enter username for {types[i].Name.Replace("Piece", "")}: ");
+                    var name = Console.ReadLine();
 
-                game.AddPlayer(types[i], name);
+                    var user = game.GetUserByName(name);
+                    if (user == null)
+                    {
+                        game.AddPlayer(types[i], name);
+                        runLoop = false;
+                    }
+
+                    else
+                    {
+                        Console.WriteLine($"{user.Name} already exists, do you want to use another name? (y/n)");
+                        var answer = Console.ReadLine();
+                        if (answer.ToLower() == "y")
+                            runLoop = true;
+                        else
+                            runLoop = false;
+                    }
+
+                } while (runLoop);
 
             }
+
+            game.SaveGame();
             
         }
 

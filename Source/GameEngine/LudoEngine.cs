@@ -1,4 +1,5 @@
 ﻿using GameEngine.DataAccess;
+using GameEngine.DbModels;
 using GameEngine.Models;
 using System;
 using System.Collections.Generic;
@@ -21,14 +22,28 @@ namespace GameEngine
         public LudoEngine(LudoDbContext dbContext, string gameName)
         {
             context = dbContext;
-            GameName = gameName;
+            if (!GameExists(gameName, context))
+                GameName = gameName;
+            else
+                throw new ArgumentException("Make sure to check the game name is available before instantiating.");
             random = new Random();
             Players = new List<User>();
         }
 
         public void AddPlayer(Type pieceType, string name)
         {
-            User player = new User() { Name = name };
+            User player;
+            var user = GetUserByName(name);
+
+            if (user == null)
+            {
+                player = new User() { Name = name };
+                context.Users.Add(player);
+                context.SaveChanges();
+            }
+            else
+                player = user;
+
             player.Pieces = new List<IPiece>() {
                 (IPiece)Activator.CreateInstance(pieceType),
                 (IPiece)Activator.CreateInstance(pieceType),
@@ -37,35 +52,25 @@ namespace GameEngine
             };
             Players.Add(player);
 
-            if (Players.Count == 2)
-                SaveGame();
-
             if (Players.Count == 1)
                 CurrentPlayer = Players[0];
         }
 
-        private void SaveGame()
+        public void SaveGame()
         {
+            var game = new Game() { Name = GameName, Active = true, NextToRollDice = CurrentPlayer };
+            context.Games.Add(game);
+            int gameId = game.GameId;
 
-            AddNewPlayersToDatabase();
-
-            context.Games.Add(new Game() { Name = GameName, Active = true, NextToRollDice = CurrentPlayer });
-            context.SaveChanges();
-
-
-        }
-
-        private void AddNewPlayersToDatabase()
-        {
-            foreach (var player in Players)
+            foreach(var player in Players)
             {
-                // If the user is not in the database, add the user
-                if (!UserExistsInDatabase(player.Name))
-                {
-                    context.Users.Add(new User() { Name = player.Name });
-                }
+                context.GameMembers.Add(new GameMember() { Game = game, GameId = game.GameId, User = player, UserId = player.UserId });
+
             }
+
+            context.SaveChanges();
         }
+
 
         private bool UserExistsInDatabase(string name)
         {
@@ -195,9 +200,13 @@ namespace GameEngine
             return player.Pieces.Where(p => p.Position != 0).ToList();
         }
 
-        public void Load()
+        public void Load(string name)
         {
-            
+            // Find game using name
+
+            // Get players in game
+
+            // For every player, add pieces at correct positions
         }
 
         public int ThrowDice()
@@ -223,6 +232,17 @@ namespace GameEngine
             var winner = Players.Find(pl => pl.Pieces.TrueForAll(p => p.Position >= p.EndPosition));
             Winner = winner;
             return winner == null ? false : true;
+        }
+
+        public static bool GameExists(string name, LudoDbContext context)
+        {
+            if (name == "") return true;
+            try
+            {
+                var game = context.Games.Where(g => g.Name == name).Single();
+                return game == null ? true : false;
+            }
+            catch { return false; }
         }
     }
 }

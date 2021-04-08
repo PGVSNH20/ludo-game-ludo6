@@ -4,35 +4,22 @@ using GameEngine.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GameEngine.Migrations
 {
     [DbContext(typeof(LudoDbContext))]
-    partial class LudoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210408094257_AddedUsersListInGame")]
+    partial class AddedUsersListInGame
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.4")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-            modelBuilder.Entity("GameEngine.DbModels.GameMember", b =>
-                {
-                    b.Property<int>("GameId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("GameId", "UserId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("GameMembers");
-                });
 
             modelBuilder.Entity("GameEngine.Models.Game", b =>
                 {
@@ -94,6 +81,9 @@ namespace GameEngine.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<int?>("GameId")
+                        .HasColumnType("int");
+
                     b.Property<int?>("GamesLost")
                         .HasColumnType("int");
 
@@ -106,26 +96,9 @@ namespace GameEngine.Migrations
 
                     b.HasKey("UserId");
 
+                    b.HasIndex("GameId");
+
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("GameEngine.DbModels.GameMember", b =>
-                {
-                    b.HasOne("GameEngine.Models.Game", "Game")
-                        .WithMany("GameMembers")
-                        .HasForeignKey("GameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("GameEngine.Models.User", "User")
-                        .WithMany("GameMembers")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Game");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("GameEngine.Models.Game", b =>
@@ -152,14 +125,16 @@ namespace GameEngine.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("GameEngine.Models.Game", b =>
-                {
-                    b.Navigation("GameMembers");
-                });
-
             modelBuilder.Entity("GameEngine.Models.User", b =>
                 {
-                    b.Navigation("GameMembers");
+                    b.HasOne("GameEngine.Models.Game", null)
+                        .WithMany("Users")
+                        .HasForeignKey("GameId");
+                });
+
+            modelBuilder.Entity("GameEngine.Models.Game", b =>
+                {
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

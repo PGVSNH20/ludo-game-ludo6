@@ -63,33 +63,34 @@ namespace LudoTests
             Assert.Empty(moveablePieces);
         }
 
-        [Fact]
-        public void WhenTwoPlayersAddedGame_ExpectItToBeAddedToDatabase()
-        {
-            var contextMock = new Mock<LudoDbContext>();
-            List<Game> games = new List<Game>() { new Game() { GameId = 1, Active = true, Name = "game1" } };
-            List<User> users = new List<User>() { new User() { UserId = 1, Name = "userExample" } };
-            contextMock.SetupSequence(x => x.Set<Game>()).ReturnsDbSet(new List<Game>()).ReturnsDbSet(games);
-            contextMock.Setup(x => x.Users).ReturnsDbSet(users);
+        //[Fact]
+        //public void WhenTwoPlayersAddedGame_ExpectItToBeAddedToDatabase()
+        //{
+        //    var contextMock = new Mock<LudoDbContext>();
+        //    List<Game> games = new List<Game>() { new Game() { GameId = 1, Active = true, Name = "game1" } };
+        //    List<User> users = new List<User>() { new User() { UserId = 1, Name = "userExample" } };
+        //    contextMock.SetupSequence(x => x.Set<Game>()).ReturnsDbSet(new List<Game>()).ReturnsDbSet(games);
+        //    contextMock.
+        //    contextMock.Setup(x => x.Users).ReturnsDbSet(users);
 
-            LudoEngine game = new LudoEngine(contextMock.Object, "testName");
+        //    LudoEngine game = new LudoEngine(contextMock.Object, "testName");
 
-            game.AddPlayer(typeof(RedPiece), "player1");
-            game.AddPlayer(typeof(BluePiece), "player2");
+        //    game.AddPlayer(typeof(RedPiece), "player1");
+        //    game.AddPlayer(typeof(BluePiece), "player2");
 
-            Game gameEntity = null;
-            try
-            {
-                gameEntity = contextMock.Object.Games.Where(g => g.Name == "testName").Single();
-            }catch
-            {
-                gameEntity = null;
-            }
+        //    Game gameEntity = null;
+        //    try
+        //    {
+        //        gameEntity = contextMock.Object.Games.Where(g => g.Name == "testName").Single();
+        //    }catch
+        //    {
+        //        gameEntity = null;
+        //    }
 
-            //contextMock.Verify(x => x.AddNewPlayersToDatabase(game.CurrentPlayer.Name, "game1"), Times.Exactly(1));
+        //    //contextMock.Verify(x => x.AddNewPlayersToDatabase(game.CurrentPlayer.Name, "game1"), Times.Exactly(1));
 
-            Assert.Null(gameEntity);
+        //    Assert.Null(gameEntity);
 
-        }
+        //}
     }
 }

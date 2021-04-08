@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameEngine.DbModels;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -16,5 +17,6 @@ namespace GameEngine.Models
         public int? GamesLost { get; set; }
         [NotMapped]
         public List<IPiece> Pieces { get; set; }
+        public ICollection<GameMember> GameMembers { get; set; }
     }
 }
