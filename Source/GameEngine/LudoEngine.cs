@@ -1,6 +1,7 @@
 ﻿using GameEngine.DataAccess;
 using GameEngine.DbModels;
 using GameEngine.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,13 @@ namespace GameEngine
                 GameName = gameName;
             else
                 throw new ArgumentException("Make sure to check the game name is available before instantiating.");
+            random = new Random();
+            Players = new List<User>();
+        }
+
+        private LudoEngine(LudoDbContext dbContext)
+        {
+            context = dbContext;
             random = new Random();
             Players = new List<User>();
         }
@@ -97,7 +105,7 @@ namespace GameEngine
             }
         }
 
-        public List<Type> GetPieceTypes()
+        public static List<Type> GetPieceTypes()
         {
             var type = typeof(IPiece);
             Assembly IPieceAssembly = type.Assembly;
@@ -230,13 +238,64 @@ namespace GameEngine
             return player.Pieces.Where(p => p.Position != 0).ToList();
         }
 
-        public void Load(string name)
+        public static LudoEngine Load(string name, LudoDbContext context)
         {
-            // Find game using name
+            try
+            {
+                // Find the game in the database using name
+                var gameEntity = context.Games.Include(g => g.NextToRollDice).Include(g => g.Winner).Where(g => g.Name == name).Single();
 
-            // Get players in game
+                // Instantiate a new game and set the needed properties to values from the gameEntity
+                LudoEngine game = new LudoEngine(context);
+                game.GameName = gameEntity.Name;
+                game.CurrentPlayer = gameEntity.NextToRollDice;
+                game.Game = gameEntity;
+                game.Winner = gameEntity.Winner;
 
-            // For every player, add pieces at correct positions
+                // Get all the players in the game
+                var gameMemberEntities = context.GameMembers.Include(gm => gm.Piece).Where(gm => gm.GameId == gameEntity.GameId).ToList();
+
+                // Setup a player object for each member in the game
+                foreach(var gameMemberEntity in gameMemberEntities)
+                {
+                    var pieceEntity = context.Pieces.Where(p => p.PieceId == gameMemberEntity.Piece.PieceId).Single();
+                    var pieceType = GetPieceTypeFromColor(pieceEntity.Color);
+                    var user = context.Users.Where(u => u.UserId == gameMemberEntity.UserId).Single();
+                    user.Pieces = new List<IPiece>();
+
+                    // Get all the player piece positions
+                    var gamePositions = context.GamePositions.Where(gp => gp.Game == gameEntity && gp.User == user).ToList();
+
+                    // For each piece that the player has in the game, create a piece object and add it to the player Pieces-list
+                    foreach(var gamePosition in gamePositions)
+                    {
+                        IPiece piece = (IPiece)Activator.CreateInstance(pieceType);
+                        piece.Position = gamePosition.Position;
+                        user.Pieces.Add(piece);
+                    }
+
+                    // Player setup is done, therefore add the player to the Players-list.
+                    game.Players.Add(user);
+                    
+                }
+
+                return game;
+
+
+            }catch
+            {
+                return null;
+
+            }
+
+
+        }
+
+        private static Type GetPieceTypeFromColor(string color)
+        {
+            var types = GetPieceTypes();
+            var type = types.Where(t => t.Name.ToLower().Contains(color.ToLower())).Single();
+            return type;
         }
 
         public int ThrowDice()

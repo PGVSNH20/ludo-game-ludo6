@@ -17,6 +17,6 @@ namespace GameEngine.Models
         public User User { get; set; }
 
         [Required]
-        public double Position { get; set; } = 0;
+        public int Position { get; set; } = 0;
     }
 }

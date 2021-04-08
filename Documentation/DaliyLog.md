@@ -65,4 +65,5 @@ ___
 - Added AddedPieceDb
 - AskForGameName : Checking if name allready exist in Db
 - SwitchPlayer() : Updated with an Db update/save for "NextToRollDice" in Games table.
-- Added logic to update the 'WinnerUserId' and 'Active' columns in Game-table and 
+- Added logic to update the 'WinnerUserId' and 'Active' columns in the Games table.
+- Added logic to be able to load an existing game from the database using its name.

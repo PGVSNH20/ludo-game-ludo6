@@ -21,15 +21,22 @@ namespace LudoConsole
                 switch (choice)
                 {
                     case 1:
-                        string gameName = AskForGameName(dbContext);
+                        string gameName = AskForNewGameName(dbContext);
                         game = new LudoEngine(dbContext, gameName);
                         int numberOfPlayers = AskForNumberOfPlayers();
                         AddPlayers(numberOfPlayers, game);
                         Play(game);
                         break;
                     case 2:
-                        game = new LudoEngine(dbContext, "");
-                        game.Load("");
+                        string gameToLoad = AskForGameNameToLoad();
+                        game = LudoEngine.Load(gameToLoad, dbContext);
+                        if (game != null)
+                            if (game.Winner == null)
+                                Play(game);
+                            else
+                                Console.WriteLine($"{game.Winner.Name} won this game!");
+                        else
+                            Console.WriteLine("Sorry, couldn't find game");
                         break;
                     case 3:
                         game = new LudoEngine(dbContext, "");
@@ -50,7 +57,20 @@ namespace LudoConsole
 
         }
 
-        private static string AskForGameName(LudoDbContext context)
+        private static string AskForGameNameToLoad()
+        {
+            string gameToLoad;
+            do
+            {
+                Console.Write("What's the name of the game to load? ");
+                gameToLoad = Console.ReadLine();
+
+            } while (gameToLoad.Length <= 0);
+            
+            return gameToLoad;
+        }
+
+        private static string AskForNewGameName(LudoDbContext context)
         {
             bool gameExists = true;
             string input;
@@ -165,7 +185,7 @@ namespace LudoConsole
         { 
             for(int i = 0; i < numOfPlayers; i++)
             {
-                var types = game.GetPieceTypes();
+                var types = LudoEngine.GetPieceTypes();
                 bool runLoop = true;
                 do
                 {
