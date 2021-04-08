@@ -13,6 +13,7 @@ namespace GameEngine.DataAccess
         public virtual DbSet<Game> Games { get; set; }
         public virtual DbSet<GamePosition> GamePositions { get; set; }
         public virtual DbSet<GameMember> GameMembers { get; set; }
+        public virtual DbSet<Piece> Pieces { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -24,6 +25,13 @@ namespace GameEngine.DataAccess
             modelBuilder.Entity<GameMember>().HasKey(gm => new { gm.GameId, gm.UserId });
             modelBuilder.Entity<GameMember>().HasOne(gm => gm.Game).WithMany(g => g.GameMembers).HasForeignKey(gm => gm.GameId);
             modelBuilder.Entity<GameMember>().HasOne(gm => gm.User).WithMany(u => u.GameMembers).HasForeignKey(gm => gm.UserId);
+
+            modelBuilder.Entity<Piece>().HasData(
+                new Piece { PieceId = 1, Color = "Blue" },
+                new Piece { PieceId = 2, Color = "Green" },
+                new Piece { PieceId = 3, Color = "Red" },
+                new Piece { PieceId = 4, Color = "Yellow" }
+            );
         }
     }
 }

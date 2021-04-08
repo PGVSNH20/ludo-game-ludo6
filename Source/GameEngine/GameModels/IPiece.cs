@@ -5,5 +5,6 @@
         public int Position { get; set; }
         public int StartPosition { get; set; }
         public int EndPosition { get; set; }
+        public string Color { get; set; }
     }
 }

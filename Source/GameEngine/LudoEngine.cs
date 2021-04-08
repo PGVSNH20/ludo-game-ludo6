@@ -64,7 +64,19 @@ namespace GameEngine
 
             foreach(var player in Players)
             {
-                context.GameMembers.Add(new GameMember() { Game = game, GameId = game.GameId, User = player, UserId = player.UserId });
+
+                var typeOfPiece = player.Pieces[0].Color;
+                var pieceEntity = context.Pieces.Where(p => p.Color.ToLower() == typeOfPiece.ToLower()).Single();
+
+                context.GameMembers.Add(
+                    new GameMember() { Game = game, GameId = game.GameId, User = player, UserId = player.UserId, Piece = pieceEntity
+                });
+
+                foreach(var piece in player.Pieces)
+                {
+                    
+                    context.GamePositions.Add(new GamePosition { Game = game, Position = 0, User = player  });
+                }
 
             }
 

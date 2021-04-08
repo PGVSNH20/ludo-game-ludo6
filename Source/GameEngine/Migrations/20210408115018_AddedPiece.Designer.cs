@@ -4,14 +4,16 @@ using GameEngine.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace GameEngine.Migrations
 {
     [DbContext(typeof(LudoDbContext))]
-    partial class LudoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210408115018_AddedPiece")]
+    partial class AddedPiece
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -27,12 +29,7 @@ namespace GameEngine.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("PieceId")
-                        .HasColumnType("int");
-
                     b.HasKey("GameId", "UserId");
-
-                    b.HasIndex("PieceId");
 
                     b.HasIndex("UserId");
 
@@ -51,7 +48,7 @@ namespace GameEngine.Migrations
 
                     b.HasKey("PieceId");
 
-                    b.ToTable("Pieces");
+                    b.ToTable("Piece");
 
                     b.HasData(
                         new
@@ -110,6 +107,9 @@ namespace GameEngine.Migrations
                     b.Property<int?>("GameId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("PieceId")
+                        .HasColumnType("int");
+
                     b.Property<double>("Position")
                         .HasColumnType("float");
 
@@ -119,6 +119,8 @@ namespace GameEngine.Migrations
                     b.HasKey("GamePositionId");
 
                     b.HasIndex("GameId");
+
+                    b.HasIndex("PieceId");
 
                     b.HasIndex("UserId");
 
@@ -155,10 +157,6 @@ namespace GameEngine.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("GameEngine.DbModels.Piece", "Piece")
-                        .WithMany()
-                        .HasForeignKey("PieceId");
-
                     b.HasOne("GameEngine.Models.User", "User")
                         .WithMany("GameMembers")
                         .HasForeignKey("UserId")
@@ -166,8 +164,6 @@ namespace GameEngine.Migrations
                         .IsRequired();
 
                     b.Navigation("Game");
-
-                    b.Navigation("Piece");
 
                     b.Navigation("User");
                 });
@@ -187,11 +183,17 @@ namespace GameEngine.Migrations
                         .WithMany()
                         .HasForeignKey("GameId");
 
+                    b.HasOne("GameEngine.DbModels.Piece", "Piece")
+                        .WithMany()
+                        .HasForeignKey("PieceId");
+
                     b.HasOne("GameEngine.Models.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
 
                     b.Navigation("Game");
+
+                    b.Navigation("Piece");
 
                     b.Navigation("User");
                 });

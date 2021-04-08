@@ -1,6 +1,7 @@
 ﻿using GameEngine.Models;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text;
 
 namespace GameEngine.DbModels
@@ -12,5 +13,8 @@ namespace GameEngine.DbModels
         public Game Game { get; set; }
         public int UserId { get; set; }
         public User User { get; set; }
+
+        [Required]
+        public Piece Piece { get; set; }
     }
 }

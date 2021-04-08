@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GameEngine.DbModels;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
@@ -14,9 +15,6 @@ namespace GameEngine.Models
 
         [Required]
         public User User { get; set; }
-
-        [Required]
-        public string Color { get; set; }
 
         [Required]
         public double Position { get; set; } = 0;

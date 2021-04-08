@@ -9,5 +9,6 @@ namespace GameEngine.GameModels
         public int Position { get; set; }
         public int StartPosition { get; set; } = 31;
         public int EndPosition { get; set; } = 75;
+        public string Color { get; set; } = "Yellow";
     }
 }
