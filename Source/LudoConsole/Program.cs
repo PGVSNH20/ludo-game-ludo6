@@ -52,11 +52,15 @@ namespace LudoConsole
 
         private static string AskForGameName(LudoDbContext context)
         {
+            bool gameExists = true;
             string input;
             do {
                 Console.Write("What should the game be called? ");
                 input = Console.ReadLine();
-            } while (LudoEngine.GameExists(input, context));
+                gameExists = LudoEngine.GameExists(input, context);
+                if (gameExists)
+                    Console.WriteLine("Sorry, name already taken.");
+            } while (gameExists);
 
             return input;
         }
@@ -183,7 +187,10 @@ namespace LudoConsole
                         if (answer.ToLower() == "y")
                             runLoop = true;
                         else
+                        {
+                            game.AddPlayer(types[i], user.Name);
                             runLoop = false;
+                        }
                     }
 
                 } while (runLoop);

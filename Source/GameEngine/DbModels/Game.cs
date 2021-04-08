@@ -17,6 +17,7 @@ namespace GameEngine.Models
         public bool Active { get; set; } = true;
         public User NextToRollDice { get; set; }
         public ICollection<GameMember> GameMembers { get; set; }
+        public User Winner { get; set; }
 
     }
 }

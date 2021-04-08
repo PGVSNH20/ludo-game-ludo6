@@ -16,6 +16,7 @@ namespace GameEngine
         public User CurrentPlayer { get; set; }
         public User Winner { get; set; }
         public string GameName { get; set; }
+        public Game Game { get; set; }
 
         private Random random;
 
@@ -60,7 +61,7 @@ namespace GameEngine
         {
             var game = new Game() { Name = GameName, Active = true, NextToRollDice = CurrentPlayer };
             context.Games.Add(game);
-            int gameId = game.GameId;
+            Game = game;
 
             foreach(var player in Players)
             {
@@ -157,6 +158,8 @@ namespace GameEngine
         // Uses the parameters to move a piece a certain number of steps
         public bool MovePiece(IPiece piece, int moves)
         {
+            GamePosition gamePosition = context.GamePositions
+                .Where(gp => gp.Position == piece.Position && gp.User == CurrentPlayer && gp.Game == Game).First();
 
             var collidingPiece = FindCollidingPiece(piece.Position + moves);
 
@@ -165,31 +168,46 @@ namespace GameEngine
 
             if (collidingPiece != null && PieceIsEnemy(collidingPiece))
             {
+                GamePosition enemyPosition = context.GamePositions
+                    .Where(gp => gp.Position == collidingPiece.Position && gp.Game == Game).Single();
+
+                gamePosition.Position += moves;
+                enemyPosition.Position = 0;
+                context.GamePositions.Update(gamePosition);
+                context.GamePositions.Update(enemyPosition);
+
                 collidingPiece.Position = 0;
+                piece.Position += moves;
             }
 
             if (collidingPiece == null)
             {
                 if (piece.Position == 0 && moves == 6)
+                {
+                    gamePosition.Position = piece.StartPosition;
+                    context.GamePositions.Update(gamePosition);
+
                     piece.Position = piece.StartPosition;
+                }
                 else
+                {
+                    gamePosition.Position += moves;
+                    context.GamePositions.Update(gamePosition);
+
                     piece.Position += moves;
+                }
             }
 
             if (PieceIsInGoal(piece))
             {
+                gamePosition.Position = piece.EndPosition;
+                context.GamePositions.Update(gamePosition);
+
                 piece.Position = piece.EndPosition;
             }
 
-            UpdateGame();
-
             return true;
             
-        }
-
-        private void UpdateGame()
-        {
-
         }
 
         public bool PieceIsInPlay(IPiece piece)
@@ -229,7 +247,7 @@ namespace GameEngine
         public User GetUserByName(string name)
         {
             try {
-                return context.Users.Where(u => u.Name == name).Single();
+                return context.Users.Where(u => u.Name.ToLower() == name.ToLower()).Single();
             } catch { return null; }
         }
 
@@ -237,6 +255,10 @@ namespace GameEngine
         {
             int currentPlayerIndex = Players.FindIndex(pl => pl.Name == CurrentPlayer.Name);
             CurrentPlayer = Players[(currentPlayerIndex + 1) >= Players.Count ? 0 : currentPlayerIndex + 1];
+            Game.NextToRollDice = CurrentPlayer;
+            context.Games.Update(Game);
+            // SaveChanges needed?
+            context.SaveChanges();
         }
 
         public bool HasWinner()
@@ -251,8 +273,8 @@ namespace GameEngine
             if (name == "") return true;
             try
             {
-                var game = context.Games.Where(g => g.Name == name).Single();
-                return game == null ? true : false;
+                Game game = context.Games.Where(g => g.Name.ToLower() == name.ToLower()).Single();
+                return game == null ? false : true;
             }
             catch { return false; }
         }
