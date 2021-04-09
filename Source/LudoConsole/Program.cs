@@ -27,13 +27,7 @@ namespace LudoConsole
                     case 2:
                         string gameToLoad = AskForGameNameToLoad();
                         game = LudoEngine.Load(gameToLoad, dbContext);
-                        if (game != null)
-                            if (game.Winner == null)
-                                Play(game);
-                            else
-                                Console.WriteLine($"{game.Winner.Name} won this game!");
-                        else
-                            Console.WriteLine("Sorry, couldn't find game");
+                        LoadGame(game);
                         break;
                     case 3:
                         var name = AskForUsername();
@@ -54,6 +48,17 @@ namespace LudoConsole
             }
             while (choice != 9);
 
+        }
+
+        private static void LoadGame(LudoEngine game)
+        {
+            if (game != null)
+                if (game.Winner == null)
+                    Play(game);
+                else
+                    Console.WriteLine($"{game.Winner.Name} won this game!");
+            else
+                Console.WriteLine("Sorry, couldn't find game");
         }
 
         private static LudoEngine SetupNewGame(LudoDbContext dbContext)
