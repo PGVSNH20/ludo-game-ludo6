@@ -20,21 +20,21 @@ namespace LudoConsole
 
                 switch (choice)
                 {
-                    case 1:
+                    case 1: // Create new game
                         var newGame = SetupNewGame(dbContext);
                         Play(newGame);
                         break;
-                    case 2:
+                    case 2: // Load game from database
                         string gameToLoad = AskForGameNameToLoad();
                         game = LudoEngine.Load(gameToLoad, dbContext);
                         LoadGame(game);
                         break;
-                    case 3:
+                    case 3: // Show user statistics
                         var name = AskForUsername();
                         var user = LudoEngine.GetUserByName(name, dbContext);
                         ShowStatistics(user);
                         break;
-                    case 4:
+                    case 4: // Show info about all games in database
                         ShowAllGames(dbContext);
                         break;
                     default:
