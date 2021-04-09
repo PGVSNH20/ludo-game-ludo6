@@ -142,7 +142,6 @@ namespace GameEngine
             return moveablePieces;
         }
 
-        // Uses the parameters to move a piece a certain number of steps
         public bool MovePiece(IPiece piece, int moves)
         {
             GamePosition gamePosition = context.GamePositions
@@ -153,48 +152,63 @@ namespace GameEngine
             if (collidingPiece != null && !PieceIsEnemy(collidingPiece))
                 return false;
 
+            // If the user is colliding with an enemy piece
             if (collidingPiece != null && PieceIsEnemy(collidingPiece))
             {
-                GamePosition enemyPosition = context.GamePositions
-                    .Where(gp => gp.Position == collidingPiece.Position && gp.Game == game).Single();
-
-                gamePosition.Position += moves;
-                enemyPosition.Position = 0;
-                context.GamePositions.Update(gamePosition);
-                context.GamePositions.Update(enemyPosition);
-
-                collidingPiece.Position = 0;
-                piece.Position += moves;
+                Collide(gamePosition, piece, collidingPiece, moves);
             }
-
+            // If the user isn't colliding
             if (collidingPiece == null)
             {
                 if (piece.Position == 0 && moves == 6)
-                {
-                    gamePosition.Position = piece.StartPosition;
-                    context.GamePositions.Update(gamePosition);
-
-                    piece.Position = piece.StartPosition;
-                }
+                    MoveOutOfNest(gamePosition, piece);
                 else
-                {
-                    gamePosition.Position += moves;
-                    context.GamePositions.Update(gamePosition);
-
-                    piece.Position += moves;
-                }
+                    JustMove(gamePosition, piece, moves);
             }
 
             if (PieceIsInGoal(piece))
-            {
-                gamePosition.Position = 100;
-                context.GamePositions.Update(gamePosition);
-
-                piece.Position = 100;
-            }
+                MoveToGoal(gamePosition, piece);
 
             return true;
             
+        }
+
+        private void Collide(GamePosition gamePosition, IPiece piece, IPiece collidingPiece, int moves)
+        {
+            GamePosition enemyPosition = context.GamePositions
+                    .Where(gp => gp.Position == collidingPiece.Position && gp.Game == game).Single();
+
+            gamePosition.Position += moves;
+            enemyPosition.Position = 0;
+            context.GamePositions.Update(gamePosition);
+            context.GamePositions.Update(enemyPosition);
+
+            collidingPiece.Position = 0;
+            piece.Position += moves;
+        }
+
+        private void MoveToGoal(GamePosition gamePosition, IPiece piece)
+        {
+            gamePosition.Position = 100;
+            context.GamePositions.Update(gamePosition);
+
+            piece.Position = 100;
+        }
+
+        private void JustMove(GamePosition gamePosition, IPiece piece, int moves)
+        {
+            gamePosition.Position += moves;
+            context.GamePositions.Update(gamePosition);
+
+            piece.Position += moves;
+        }
+
+        private void MoveOutOfNest(GamePosition gamePosition, IPiece piece)
+        {
+            gamePosition.Position = piece.StartPosition;
+            context.GamePositions.Update(gamePosition);
+
+            piece.Position = piece.StartPosition;
         }
 
         private bool PieceIsInPlay(IPiece piece)
