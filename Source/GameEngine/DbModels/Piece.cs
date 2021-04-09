@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GameEngine.DbModels
+﻿namespace GameEngine.DbModels
 {
     public class Piece
     {

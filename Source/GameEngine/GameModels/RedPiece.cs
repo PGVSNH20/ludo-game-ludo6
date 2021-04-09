@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace GameEngine.GameModels
+﻿namespace GameEngine.GameModels
 {
     public class RedPiece : IPiece
     {
