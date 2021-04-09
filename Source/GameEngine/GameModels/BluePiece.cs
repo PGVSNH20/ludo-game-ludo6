@@ -7,8 +7,8 @@ namespace GameEngine.GameModels
     public class BluePiece : IPiece
     {
         public int Position { get; set; }
-        public int StartPosition { get; set; } = 1;
-        public int EndPosition { get; set; } = 45;
-        public string Color { get; set; } = "Blue";
+        public int StartPosition { get; } = 1;
+        public int EndPosition { get; } = 45;
+        public string Color { get; } = "Blue";
     }
 }

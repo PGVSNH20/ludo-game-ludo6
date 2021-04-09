@@ -12,20 +12,20 @@ namespace GameEngine
 {
     public class LudoEngine
     {
-        private LudoDbContext context;
         public List<User> Players { get; set; }
         public User CurrentPlayer { get; set; }
         public User Winner { get; set; }
-        public string GameName { get; set; }
-        public Game Game { get; set; }
 
+        private Game game;
+        private string gameName;
+        private LudoDbContext context;
         private Random random;
 
         public LudoEngine(LudoDbContext dbContext, string gameName)
         {
             context = dbContext;
             if (!GameExists(gameName, context))
-                GameName = gameName;
+                this.gameName = gameName;
             else
                 throw new ArgumentException("Make sure to check the game name is available before instantiating.");
             random = new Random();
@@ -67,9 +67,9 @@ namespace GameEngine
 
         public void SaveGame()
         {
-            var game = new Game() { Name = GameName, Active = true, NextToRollDice = CurrentPlayer };
+            var game = new Game() { Name = gameName, Active = true, NextToRollDice = CurrentPlayer };
             context.Games.Add(game);
-            Game = game;
+            this.game = game;
 
             foreach(var player in Players)
             {
@@ -92,33 +92,12 @@ namespace GameEngine
             context.SaveChanges();
         }
 
-
-        private bool UserExistsInDatabase(string name)
-        {
-            try
-            {
-                var user = context.Users.Where(u => u.Name == name).Single();
-                return true;
-            } catch
-            {
-                return false;
-            }
-        }
-
         public static List<Type> GetPieceTypes()
         {
             var type = typeof(IPiece);
             Assembly IPieceAssembly = type.Assembly;
             return IPieceAssembly.GetTypes().Where(p => type.IsAssignableFrom(p) && !p.IsInterface).ToList();
 
-        }
-
-        public bool CheckIfEnteringGoal(IPiece piece, int moves)
-        {
-            int nextPosition = piece.Position + moves;
-
-            if (nextPosition >= piece.EndPosition) return true;
-            return false;
         }
 
         public bool PieceIsInGoal(IPiece piece)
@@ -167,7 +146,7 @@ namespace GameEngine
         public bool MovePiece(IPiece piece, int moves)
         {
             GamePosition gamePosition = context.GamePositions
-                .Where(gp => gp.Position == piece.Position && gp.User == CurrentPlayer && gp.Game == Game).First();
+                .Where(gp => gp.Position == piece.Position && gp.User == CurrentPlayer && gp.Game == game).First();
 
             var collidingPiece = FindCollidingPiece(piece.Position + moves);
 
@@ -177,7 +156,7 @@ namespace GameEngine
             if (collidingPiece != null && PieceIsEnemy(collidingPiece))
             {
                 GamePosition enemyPosition = context.GamePositions
-                    .Where(gp => gp.Position == collidingPiece.Position && gp.Game == Game).Single();
+                    .Where(gp => gp.Position == collidingPiece.Position && gp.Game == game).Single();
 
                 gamePosition.Position += moves;
                 enemyPosition.Position = 0;
@@ -218,12 +197,12 @@ namespace GameEngine
             
         }
 
-        public bool PieceIsInPlay(IPiece piece)
+        private bool PieceIsInPlay(IPiece piece)
         {
             return piece.Position > 0 && piece.Position < piece.EndPosition;
         }
 
-        public bool PieceIsInNest(IPiece piece)
+        private bool PieceIsInNest(IPiece piece)
         {
             return piece.Position == 0;
         }
@@ -237,9 +216,9 @@ namespace GameEngine
 
                 // Instantiate a new game and set the needed properties to values from the gameEntity
                 LudoEngine game = new LudoEngine(context);
-                game.GameName = gameEntity.Name;
+                game.gameName = gameEntity.Name;
                 game.CurrentPlayer = gameEntity.NextToRollDice;
-                game.Game = gameEntity;
+                game.game = gameEntity;
                 game.Winner = gameEntity.Winner;
 
                 // Get all the players in the game
@@ -277,8 +256,6 @@ namespace GameEngine
                 return null;
 
             }
-
-
         }
 
         private static Type GetPieceTypeFromColor(string color)
@@ -305,8 +282,8 @@ namespace GameEngine
         {
             int currentPlayerIndex = Players.FindIndex(pl => pl.Name == CurrentPlayer.Name);
             CurrentPlayer = Players[(currentPlayerIndex + 1) >= Players.Count ? 0 : currentPlayerIndex + 1];
-            Game.NextToRollDice = CurrentPlayer;
-            context.Games.Update(Game);
+            game.NextToRollDice = CurrentPlayer;
+            context.Games.Update(game);
             // SaveChanges needed?
             context.SaveChanges();
         }
@@ -317,9 +294,9 @@ namespace GameEngine
             Winner = winner;
             if (Winner != null)
             {
-                Game.Winner = Winner;
-                Game.Active = false;
-                context.Games.Update(Game);
+                game.Winner = Winner;
+                game.Active = false;
+                context.Games.Update(game);
                 // SaveChanges needed?
 
                 Winner.GamesWon = Winner.GamesWon == null ?  1 : Winner.GamesWon++;

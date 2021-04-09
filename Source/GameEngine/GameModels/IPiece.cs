@@ -3,8 +3,8 @@
     public interface IPiece
     {
         public int Position { get; set; }
-        public int StartPosition { get; set; }
-        public int EndPosition { get; set; }
-        public string Color { get; set; }
+        public int StartPosition { get; }
+        public int EndPosition { get; }
+        public string Color { get; }
     }
 }
