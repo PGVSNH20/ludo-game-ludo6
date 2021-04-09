@@ -8,12 +8,13 @@ namespace LudoConsole
 {
     class Program
     {
+        private static LudoDbContext dbContext;
+
         static void Main(string[] args)
         {
-            int choice;
-            LudoDbContext dbContext = new LudoDbContext();
-            LudoEngine game;
+            dbContext = new LudoDbContext();
 
+            int choice;
             do
             {
                 choice = ChooseFromMainMenu();
@@ -21,12 +22,12 @@ namespace LudoConsole
                 switch (choice)
                 {
                     case 1: // Create new game
-                        var newGame = SetupNewGame(dbContext);
+                        var newGame = SetupNewGame();
                         Play(newGame);
                         break;
                     case 2: // Load game from database
                         string gameToLoad = AskForGameNameToLoad();
-                        game = LudoEngine.Load(gameToLoad, dbContext);
+                        var game = LudoEngine.Load(gameToLoad, dbContext);
                         ShowLoadedGame(game);
                         break;
                     case 3: // Show user statistics
@@ -35,7 +36,7 @@ namespace LudoConsole
                         ShowStatistics(user);
                         break;
                     case 4: // Show info about all games in database
-                        ShowAllGames(dbContext);
+                        ShowAllGames();
                         break;
                     default:
                         break;
@@ -56,21 +57,21 @@ namespace LudoConsole
                 Console.WriteLine("Sorry, couldn't find game");
         }
 
-        private static LudoEngine SetupNewGame(LudoDbContext dbContext)
+        private static LudoEngine SetupNewGame()
         {
-            string gameName = AskForNewGameName(dbContext);
+            string gameName = AskForNewGameName();
 
             LudoEngine game = new LudoEngine(dbContext, gameName);
 
             int numberOfPlayers = AskForNumberOfPlayers();
-            AddPlayers(numberOfPlayers, game, dbContext);
+            AddPlayers(numberOfPlayers, game);
 
             return game;
         }
 
-        private static void ShowAllGames(LudoDbContext context)
+        private static void ShowAllGames()
         {
-            var allGames = LudoEngine.GetAllGames(context);
+            var allGames = LudoEngine.GetAllGames(dbContext);
             foreach (var game in allGames)
             {
                 Console.WriteLine($"{game.Name} - Winner: {game.Winner.Name}\n");
@@ -90,14 +91,14 @@ namespace LudoConsole
             return gameToLoad;
         }
 
-        private static string AskForNewGameName(LudoDbContext context)
+        private static string AskForNewGameName()
         {
             bool gameExists = true;
             string input;
             do {
                 Console.Write("What should the game be called? ");
                 input = Console.ReadLine();
-                gameExists = LudoEngine.GameExists(input, context);
+                gameExists = LudoEngine.GameExists(input, dbContext);
                 if (gameExists)
                     Console.WriteLine("Sorry, name already taken.");
             } while (gameExists);
@@ -207,7 +208,7 @@ namespace LudoConsole
             return numOfPlayers;
         }
 
-        private static void AddPlayers(int numOfPlayers, LudoEngine game, LudoDbContext context)
+        private static void AddPlayers(int numOfPlayers, LudoEngine game)
         { 
             for(int i = 0; i < numOfPlayers; i++)
             {
@@ -215,11 +216,10 @@ namespace LudoConsole
                 bool runLoop = true;
                 do
                 {
-
                     Console.Write($"Enter username for {types[i].Name.Replace("Piece", "")}: ");
                     var name = Console.ReadLine();
 
-                    var user = LudoEngine.GetUserByName(name, context);
+                    var user = LudoEngine.GetUserByName(name, dbContext);
                     if (user == null)
                     {
                         game.AddPlayer(types[i], name);
@@ -238,13 +238,9 @@ namespace LudoConsole
                             runLoop = false;
                         }
                     }
-
                 } while (runLoop);
-
             }
-
             game.SaveGame();
-            
         }
 
         private static void MovePiece(int moves, IPiece piece, LudoEngine game)
