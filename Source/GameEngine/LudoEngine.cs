@@ -207,6 +207,36 @@ namespace GameEngine
             return piece.Position == 0;
         }
 
+        private static LudoEngine CreateGameFromEntity(Game gameEntity, LudoDbContext context)
+        {
+            // Instantiate a new game and set the needed properties to values from the gameEntity
+            LudoEngine game = new LudoEngine(context);
+            game.gameName = gameEntity.Name;
+            game.CurrentPlayer = gameEntity.NextToRollDice;
+            game.game = gameEntity;
+            game.Winner = gameEntity.Winner;
+            return game;
+        }
+
+        private static User CreatePlayerFromGameMember(GameMember gameMemberEntity, Type pieceType, Game gameEntity, LudoDbContext context)
+        {
+            var user = context.Users.Where(u => u.UserId == gameMemberEntity.UserId).Single();
+            user.Pieces = new List<IPiece>();
+
+            // Get all the player piece positions
+            var gamePositions = context.GamePositions.Where(gp => gp.Game == gameEntity && gp.User == user).ToList();
+
+            // For each piece that the player has in the game, create a piece object and add it to the player Pieces-list
+            foreach (var gamePosition in gamePositions)
+            {
+                IPiece piece = (IPiece)Activator.CreateInstance(pieceType);
+                piece.Position = gamePosition.Position;
+                user.Pieces.Add(piece);
+            }
+
+            return user;
+        }
+
         public static LudoEngine Load(string name, LudoDbContext context)
         {
             try
@@ -214,12 +244,7 @@ namespace GameEngine
                 // Find the game in the database using name
                 var gameEntity = context.Games.Include(g => g.NextToRollDice).Include(g => g.Winner).Where(g => g.Name == name).Single();
 
-                // Instantiate a new game and set the needed properties to values from the gameEntity
-                LudoEngine game = new LudoEngine(context);
-                game.gameName = gameEntity.Name;
-                game.CurrentPlayer = gameEntity.NextToRollDice;
-                game.game = gameEntity;
-                game.Winner = gameEntity.Winner;
+                LudoEngine game = CreateGameFromEntity(gameEntity, context);
 
                 // Get all the players in the game
                 var gameMemberEntities = context.GameMembers.Include(gm => gm.Piece).Where(gm => gm.GameId == gameEntity.GameId).ToList();
@@ -229,27 +254,11 @@ namespace GameEngine
                 {
                     var pieceEntity = context.Pieces.Where(p => p.PieceId == gameMemberEntity.Piece.PieceId).Single();
                     var pieceType = GetPieceTypeFromColor(pieceEntity.Color);
-                    var user = context.Users.Where(u => u.UserId == gameMemberEntity.UserId).Single();
-                    user.Pieces = new List<IPiece>();
 
-                    // Get all the player piece positions
-                    var gamePositions = context.GamePositions.Where(gp => gp.Game == gameEntity && gp.User == user).ToList();
-
-                    // For each piece that the player has in the game, create a piece object and add it to the player Pieces-list
-                    foreach(var gamePosition in gamePositions)
-                    {
-                        IPiece piece = (IPiece)Activator.CreateInstance(pieceType);
-                        piece.Position = gamePosition.Position;
-                        user.Pieces.Add(piece);
-                    }
-
-                    // Player setup is done, therefore add the player to the Players-list.
+                    var user = CreatePlayerFromGameMember(gameMemberEntity, pieceType, gameEntity, context);
                     game.Players.Add(user);
-                    
                 }
-
                 return game;
-
 
             }catch
             {
@@ -287,7 +296,7 @@ namespace GameEngine
             context.SaveChanges();
         }
 
-        public bool HasWinner()
+        public bool FindWinner()
         {
             var winner = Players.Find(pl => pl.Pieces.TrueForAll(p => p.Position >= p.EndPosition));
             Winner = winner;

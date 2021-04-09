@@ -119,7 +119,7 @@ namespace LudoConsole
                         MovePiece(moves, pieceToMove, game);
                 }
 
-                gameHasWinner = game.HasWinner();
+                gameHasWinner = game.FindWinner();
 
                 game.SwitchPlayer();
 
