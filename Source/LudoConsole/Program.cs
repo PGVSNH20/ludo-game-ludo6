@@ -158,7 +158,7 @@ namespace LudoConsole
                 Console.WriteLine("Which piece do you want to move?");
                 for (int i = 0; i < moveablePieces.Count; i++)
                 {
-                    Console.WriteLine($"{i}: Piece at position {moveablePieces[i].Position}");
+                    Console.WriteLine($"{i}: Piece at position {moveablePieces[i].BoardPosition}");
                 }
 
                 var choiceIsNumber = int.TryParse(Console.ReadLine(), out choice);
@@ -171,16 +171,18 @@ namespace LudoConsole
 
         private static int LetPlayerRollDice(User player, LudoEngine game)
         {
-            Console.WriteLine($"{player.Name} it's your turn. Enter 'r' to roll the dice.");
-            var input = Console.ReadLine();
-
-            if (input == "r")
+            string input;
+            do
             {
-                int moves = game.ThrowDice();
-                Console.WriteLine($"{player.Name} got a {moves}!");
-                return moves;
-            }
-            return 0;
+                Console.WriteLine($"{player.Name} it's your turn. Enter 'r' to roll the dice.");
+                input = Console.ReadLine();
+
+            } while (input != "r");
+
+            int moves = game.ThrowDice();
+            Console.WriteLine($"{player.Name} got a {moves}!");
+
+            return moves;
         }
 
         private static int ChooseFromMainMenu()
@@ -252,11 +254,11 @@ namespace LudoConsole
                 if (game.PieceIsInGoal(piece))
                     Console.WriteLine($"{game.CurrentPlayer.Name} entered goal with a piece!");
 
-                var collidingPiece = game.FindCollidingPiece(piece.Position + moves);
+                var collidingPiece = game.CollidingPiece;
                 if (collidingPiece != null && game.PieceIsEnemy(collidingPiece))
                     Console.WriteLine($"{game.CurrentPlayer.Name} knocked away a {collidingPiece.GetType().Name.Replace("Piece", "")} piece!");
                 if (collidingPiece == null && !game.PieceIsInGoal(piece))
-                    Console.WriteLine($"{game.CurrentPlayer.Name} moved a piece to position {piece.Position}");
+                    Console.WriteLine($"{game.CurrentPlayer.Name} moved a piece to position {piece.BoardPosition}");
             }
             else
             {

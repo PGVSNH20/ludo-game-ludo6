@@ -11,9 +11,11 @@ namespace GameEngine
 {
     public class LudoEngine
     {
-        public List<User> Players { get; set; }
-        public User CurrentPlayer { get; set; }
-        public User Winner { get; set; }
+        public List<User> Players { get; private set; }
+        public User CurrentPlayer { get; private set; }
+        public User Winner { get; private set; }
+        public bool Collided { get; private set; } = false;
+        public IPiece CollidingPiece { get; private set; } = null;
 
         private Game game;
         private string gameName;
@@ -110,7 +112,12 @@ namespace GameEngine
 
             foreach(var player in Players)
             {
-                collidingPiece = player.Pieces.Find(p => p.Position == position && p.EndPosition == p.Position); 
+                collidingPiece = player.Pieces.Find(p => p.Position == position); 
+            }
+            if (collidingPiece != null)
+            {
+                Collided = true;
+                CollidingPiece = collidingPiece;
             }
             return collidingPiece;
         }
@@ -168,6 +175,8 @@ namespace GameEngine
             if (PieceIsInGoal(piece))
                 MoveToGoal(gamePosition, piece);
 
+            context.SaveChanges();
+
             return true;
             
         }
@@ -177,8 +186,8 @@ namespace GameEngine
             GamePosition enemyPosition = context.GamePositions
                     .Where(gp => gp.Position == collidingPiece.Position && gp.Game == game).Single();
 
-            gamePosition.Position += moves;
             enemyPosition.Position = 0;
+            gamePosition.Position += moves;
             context.GamePositions.Update(gamePosition);
             context.GamePositions.Update(enemyPosition);
 
@@ -196,10 +205,19 @@ namespace GameEngine
 
         private void JustMove(GamePosition gamePosition, IPiece piece, int moves)
         {
-            gamePosition.Position += moves;
+            if (piece.Position == 0)
+            {
+                gamePosition.Position = piece.StartPosition;
+                piece.Position = piece.StartPosition;
+            }
+            else
+            {
+                gamePosition.Position += moves;
+                piece.Position += moves;
+
+            }
             context.GamePositions.Update(gamePosition);
 
-            piece.Position += moves;
         }
 
         private void MoveOutOfNest(GamePosition gamePosition, IPiece piece)
@@ -305,7 +323,6 @@ namespace GameEngine
             CurrentPlayer = Players[(currentPlayerIndex + 1) >= Players.Count ? 0 : currentPlayerIndex + 1];
             game.NextToRollDice = CurrentPlayer;
             context.Games.Update(game);
-            // SaveChanges needed?
             context.SaveChanges();
         }
 
