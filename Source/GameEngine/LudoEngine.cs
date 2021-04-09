@@ -267,8 +267,7 @@ namespace GameEngine
 
         public int ThrowDice()
         {
-            //return random.Next(1, 7);
-            return 6;
+            return random.Next(1, 7);
         }
 
         public static User GetUserByName(string name, LudoDbContext context)
