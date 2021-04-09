@@ -228,16 +228,6 @@ namespace GameEngine
             return piece.Position == 0;
         }
 
-        public List<IPiece> GetPiecesInNest(Player player)
-        {
-            return player.Pieces.Where(p => p.Position == 0).ToList();
-        }
-
-        public List<IPiece> GetPiecesInPlay(Player player)
-        {
-            return player.Pieces.Where(p => p.Position != 0).ToList();
-        }
-
         public static LudoEngine Load(string name, LudoDbContext context)
         {
             try
