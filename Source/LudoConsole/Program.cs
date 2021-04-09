@@ -32,12 +32,7 @@ namespace LudoConsole
                     case 3:
                         var name = AskForUsername();
                         var user = LudoEngine.GetUserByName(name, dbContext);
-                        if (user != null)
-                        {
-                            ShowStatistics(user);
-                        }
-                        else
-                            Console.WriteLine("Couldn't find user");
+                        ShowStatistics(user);
                         break;
                     case 4:
                         ShowAllGames(dbContext);
@@ -143,7 +138,12 @@ namespace LudoConsole
 
         private static void ShowStatistics(User user)
         {
-            Console.WriteLine($"You've won {(user.GamesWon == null ? "0" : $"{user.GamesWon}")} games and lost {(user.GamesLost == null ? "0" : $"{user.GamesLost}")}!");
+            if (user != null)
+            {
+                Console.WriteLine($"You've won {(user.GamesWon == null ? "0" : $"{user.GamesWon}")} games and lost {(user.GamesLost == null ? "0" : $"{user.GamesLost}")}!");
+            }
+            else
+                Console.WriteLine("Couldn't find user");
         }
 
         private static IPiece LetPlayerChoosePiece(List<IPiece> moveablePieces, LudoEngine game)
