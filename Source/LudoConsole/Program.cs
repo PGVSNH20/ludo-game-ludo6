@@ -27,7 +27,7 @@ namespace LudoConsole
                     case 2: // Load game from database
                         string gameToLoad = AskForGameNameToLoad();
                         game = LudoEngine.Load(gameToLoad, dbContext);
-                        LoadGame(game);
+                        ShowLoadedGame(game);
                         break;
                     case 3: // Show user statistics
                         var name = AskForUsername();
@@ -45,7 +45,7 @@ namespace LudoConsole
 
         }
 
-        private static void LoadGame(LudoEngine game)
+        private static void ShowLoadedGame(LudoEngine game)
         {
             if (game != null)
                 if (game.Winner == null)
@@ -184,7 +184,7 @@ namespace LudoConsole
 
         private static int ChooseFromMainMenu()
         {
-            Console.WriteLine("What do you want do?");
+            Console.WriteLine("What do you want to do?");
             Console.WriteLine("1: Start new game");
             Console.WriteLine("2: Load game");
             Console.WriteLine("3: Show user statistics");
