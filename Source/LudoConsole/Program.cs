@@ -21,11 +21,8 @@ namespace LudoConsole
                 switch (choice)
                 {
                     case 1:
-                        string gameName = AskForNewGameName(dbContext);
-                        game = new LudoEngine(dbContext, gameName);
-                        int numberOfPlayers = AskForNumberOfPlayers();
-                        AddPlayers(numberOfPlayers, game,dbContext);
-                        Play(game);
+                        var newGame = SetupNewGame(dbContext);
+                        Play(newGame);
                         break;
                     case 2:
                         string gameToLoad = AskForGameNameToLoad();
@@ -57,6 +54,18 @@ namespace LudoConsole
             }
             while (choice != 9);
 
+        }
+
+        private static LudoEngine SetupNewGame(LudoDbContext dbContext)
+        {
+            string gameName = AskForNewGameName(dbContext);
+
+            LudoEngine game = new LudoEngine(dbContext, gameName);
+
+            int numberOfPlayers = AskForNumberOfPlayers();
+            AddPlayers(numberOfPlayers, game, dbContext);
+
+            return game;
         }
 
         private static void ShowAllGames(LudoDbContext context)
