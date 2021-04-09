@@ -24,7 +24,7 @@ namespace LudoConsole
                         string gameName = AskForNewGameName(dbContext);
                         game = new LudoEngine(dbContext, gameName);
                         int numberOfPlayers = AskForNumberOfPlayers();
-                        AddPlayers(numberOfPlayers, game);
+                        AddPlayers(numberOfPlayers, game,dbContext);
                         Play(game);
                         break;
                     case 2:
@@ -39,9 +39,8 @@ namespace LudoConsole
                             Console.WriteLine("Sorry, couldn't find game");
                         break;
                     case 3:
-                        game = new LudoEngine(dbContext, "");
                         var name = AskForUsername();
-                        var user = game.GetUserByName(name);
+                        var user = LudoEngine.GetUserByName(name, dbContext);
                         if (user != null)
                         {
                             ShowStatistics(user);
@@ -49,12 +48,24 @@ namespace LudoConsole
                         else
                             Console.WriteLine("Couldn't find user");
                         break;
+                    case 4:
+                        ShowAllGames(dbContext);
+                        break;
                     default:
                         break;
                 }
             }
             while (choice != 9);
 
+        }
+
+        private static void ShowAllGames(LudoDbContext context)
+        {
+            var allGames = LudoEngine.GetAllGames(context);
+            foreach (var game in allGames)
+            {
+                Console.WriteLine($"{game.Name} - Winner: {game.Winner.Name}\n");
+            }
         }
 
         private static string AskForGameNameToLoad()
@@ -118,7 +129,7 @@ namespace LudoConsole
 
         private static void ShowStatistics(User user)
         {
-            Console.WriteLine($"You've won {user.GamesWon} games and lost {user.GamesLost}!");
+            Console.WriteLine($"You've won {(user.GamesWon == null ? "0" : $"{user.GamesWon}")} games and lost {(user.GamesLost == null ? "0" : $"{user.GamesLost}")}!");
         }
 
         private static IPiece LetPlayerChoosePiece(List<IPiece> moveablePieces, LudoEngine game)
@@ -163,6 +174,7 @@ namespace LudoConsole
             Console.WriteLine("1: Start new game");
             Console.WriteLine("2: Load game");
             Console.WriteLine("3: Show user statistics");
+            Console.WriteLine("4: Show history of all games");
             Console.WriteLine("9: Exit");
             int.TryParse(Console.ReadLine(), out int choice);
             return choice;
@@ -181,7 +193,7 @@ namespace LudoConsole
             return numOfPlayers;
         }
 
-        private static void AddPlayers(int numOfPlayers, LudoEngine game)
+        private static void AddPlayers(int numOfPlayers, LudoEngine game, LudoDbContext context)
         { 
             for(int i = 0; i < numOfPlayers; i++)
             {
@@ -193,7 +205,7 @@ namespace LudoConsole
                     Console.Write($"Enter username for {types[i].Name.Replace("Piece", "")}: ");
                     var name = Console.ReadLine();
 
-                    var user = game.GetUserByName(name);
+                    var user = LudoEngine.GetUserByName(name, context);
                     if (user == null)
                     {
                         game.AddPlayer(types[i], name);

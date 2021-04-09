@@ -42,7 +42,7 @@ namespace GameEngine
         public void AddPlayer(Type pieceType, string name)
         {
             User player;
-            var user = GetUserByName(name);
+            var user = GetUserByName(name, context);
 
             if (user == null)
             {
@@ -290,10 +290,11 @@ namespace GameEngine
 
         public int ThrowDice()
         {
-            return random.Next(1, 7);
+            //return random.Next(1, 7);
+            return 6;
         }
 
-        public User GetUserByName(string name)
+        public static User GetUserByName(string name, LudoDbContext context)
         {
             try {
                 return context.Users.Where(u => u.Name.ToLower() == name.ToLower()).Single();
@@ -320,6 +321,19 @@ namespace GameEngine
                 Game.Active = false;
                 context.Games.Update(Game);
                 // SaveChanges needed?
+
+                Winner.GamesWon = Winner.GamesWon == null ?  1 : Winner.GamesWon++;
+                context.Users.Update(Winner);
+
+                foreach(var player in Players)
+                {
+                    if (player.Name != Winner.Name)
+                    {
+                        player.GamesLost = player.GamesLost == null ? 1 : player.GamesLost++;
+                        context.Users.Update(player);
+                    }
+                }
+
                 context.SaveChanges();
             }
             return winner != null;
@@ -334,6 +348,11 @@ namespace GameEngine
                 return game != null;
             }
             catch { return false; }
+        }
+
+        public static List<Game> GetAllGames(LudoDbContext context)
+        {
+            return context.Games.Where(g => !g.Active).Include(g => g.Winner).OrderBy(g => g.GameId).ToList();
         }
     }
 }
