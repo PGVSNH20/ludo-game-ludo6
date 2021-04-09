@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\GameEngine\GameEngine.csproj" />
+    <ProjectReference Include="..\GameEngine\LudoEngine.csproj" />
   </ItemGroup>
 
 </Project>
