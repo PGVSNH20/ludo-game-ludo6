@@ -107,8 +107,10 @@ namespace LudoConsole
                 input = Console.ReadLine();
                 gameExists = LudoEngine.GameExists(input, dbContext);
                 if (gameExists)
+                {
                     Console.Clear();
                     Console.WriteLine("Sorry, name already taken.");
+                }                    
             } while (gameExists);
 
             return input;
