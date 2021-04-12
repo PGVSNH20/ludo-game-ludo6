@@ -101,18 +101,44 @@ namespace GameEngine
 
         }
 
+        public List<IPiece> GetAllPiecesOfType(Type pieceType)
+        {
+            List<IPiece> pieces = new List<IPiece>();
+            foreach (var player in Players)
+            {
+                if (player.Pieces[0].GetType() == pieceType)
+                    pieces = player.Pieces;
+            }
+            return pieces;
+        }
+
         public bool PieceIsInGoal(IPiece piece)
         {
             return piece.Position >= piece.EndPosition;
         }
 
+        public bool PieceIsInSafeZone(IPiece piece)
+        {
+            return (piece.Position < piece.EndPosition) && (piece.Position > (piece.EndPosition - 5));
+        }
+
+        public List<IPiece> PlayerPiecesInNest(User player)
+        {
+            return player.Pieces.Where(p => PieceIsInNest(p)).ToList();
+        }
+
         public IPiece FindCollidingPiece(int position)
         {
             IPiece collidingPiece = null;
+            int nextPosition = position;
+            if (position > 40)
+                nextPosition = position - 40;
 
             foreach(var player in Players)
             {
-                collidingPiece = player.Pieces.Find(p => p.Position == position); 
+                collidingPiece = player.Pieces.Find(p => p.AbsoluteBoardPosition == nextPosition && !PieceIsInSafeZone(p));
+                if (collidingPiece != null)
+                    break;
             }
             if (collidingPiece != null)
             {
@@ -150,10 +176,17 @@ namespace GameEngine
 
         public bool MovePiece(IPiece piece, int moves)
         {
+            Collided = false;
+            CollidingPiece = null;
+
             GamePosition gamePosition = context.GamePositions
                 .Where(gp => gp.Position == piece.Position && gp.User == CurrentPlayer && gp.Game == game).First();
 
-            var collidingPiece = FindCollidingPiece(piece.Position + moves);
+            IPiece collidingPiece;
+            if (piece.AbsoluteBoardPosition == 0)
+                collidingPiece = FindCollidingPiece(piece.StartPosition);
+            else
+                collidingPiece = FindCollidingPiece(piece.AbsoluteBoardPosition + moves);
 
             if (collidingPiece != null && !PieceIsEnemy(collidingPiece))
                 return false;
@@ -187,12 +220,21 @@ namespace GameEngine
                     .Where(gp => gp.Position == collidingPiece.Position && gp.Game == game).Single();
 
             enemyPosition.Position = 0;
-            gamePosition.Position += moves;
+            collidingPiece.Position = 0;
+
+            if (piece.Position == 0)
+            {
+                piece.Position = piece.StartPosition;
+                gamePosition.Position = piece.StartPosition;
+            }
+            else
+            {
+                piece.Position += moves;
+                gamePosition.Position += moves;
+            }
             context.GamePositions.Update(gamePosition);
             context.GamePositions.Update(enemyPosition);
 
-            collidingPiece.Position = 0;
-            piece.Position += moves;
         }
 
         private void MoveToGoal(GamePosition gamePosition, IPiece piece)

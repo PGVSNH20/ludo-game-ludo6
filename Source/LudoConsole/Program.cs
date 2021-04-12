@@ -1,5 +1,6 @@
 ﻿using GameEngine;
 using GameEngine.DataAccess;
+using GameEngine.GameModels;
 using GameEngine.Models;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,12 @@ namespace LudoConsole
     class Program
     {
         private static LudoDbContext dbContext;
+        private static string[] commonZone = new string[41];
+        private static string[] blueSafeZone = new string[5];
+        private static string[] greenSafeZone = new string[5];
+        private static string[] redSafeZone = new string[5];
+        private static string[] yellowSafeZone = new string[5];
+        private static List<string[]> safeZones = new List<string[]>() { blueSafeZone, greenSafeZone, redSafeZone, yellowSafeZone };
 
         static void Main(string[] args)
         {
@@ -111,23 +118,127 @@ namespace LudoConsole
             bool gameHasWinner = false;
             while (!gameHasWinner)
             {
+                DrawBoard(game);
                 int moves = LetPlayerRollDice(game.CurrentPlayer, game);
+                Console.WriteLine($"{game.CurrentPlayer.Name} got a {moves}!");
                 var moveablePiece = game.GetMoveablePieces(moves);
                 if (moveablePiece.Count > 0)
                 {
                     var pieceToMove = LetPlayerChoosePiece(moveablePiece, game);
                     if (pieceToMove != null)
-                        MovePiece(moves, pieceToMove, game);
+                    {
+                        bool moved = MovePiece(moves, pieceToMove, game);
+
+                        while (!moved)
+                        {
+                            pieceToMove = LetPlayerChoosePiece(moveablePiece, game);
+                            moved = MovePiece(moves, pieceToMove, game);
+                        }
+                    }
                 }
-
                 gameHasWinner = game.FindWinner();
-
                 game.SwitchPlayer();
+            }
+            Console.WriteLine($"{game.Winner.Name} won the game!");
+        }
 
+        private static void DrawPlayerSafeZone(string[] safeZone, List<IPiece> pieces)
+        {
+            for (int i = 1; i < safeZone.Length; i++)
+            {
+                foreach (var piece in pieces)
+                {
+                    if (piece.RelativePosition > 40 && piece.RelativePosition < 45)
+                    {
+                        var zonePosition = piece.RelativePosition - 40;
+                        if (zonePosition == i)
+                            safeZone[i] = piece.GetType().Name.Remove(1);
+                    }
+                }
+            }
+        }
 
+        private static void FillZones()
+        {
+            foreach (var safeZone in safeZones)
+            {
+                for (int i = 1; i < safeZone.Length; i++)
+                {
+                    safeZone[i] = "O";
+                }
+            }
+        }
+
+        private static void DrawBoard(LudoEngine game)
+        {
+            int bluesInNest = 0;
+            int greensInNest = 0;
+            int redsInNest = 0;
+            int yellowsInNest = 0;
+
+            foreach (var player in game.Players)
+            {
+                if (player.Pieces[0].GetType() == typeof(BluePiece))
+                    bluesInNest = game.PlayerPiecesInNest(player).Count;
+                if (player.Pieces[0].GetType() == typeof(GreenPiece))
+                    greensInNest = game.PlayerPiecesInNest(player).Count;
+                if (player.Pieces[0].GetType() == typeof(RedPiece))
+                    redsInNest = game.PlayerPiecesInNest(player).Count;
+                if (player.Pieces[0].GetType() == typeof(YellowPiece))
+                    yellowsInNest = game.PlayerPiecesInNest(player).Count;
             }
 
-            Console.WriteLine($"{game.Winner.Name} won the game!");
+            FillZones();
+            FillZonesWithPieces(game);
+
+            Console.WriteLine($"          {commonZone[39]} {commonZone[40]} {commonZone[1]}");
+            Console.WriteLine($"    Y:{yellowsInNest}   {commonZone[38]} {blueSafeZone[1]} {commonZone[2]}    B:{bluesInNest}");
+            Console.WriteLine($"          {commonZone[37]} {blueSafeZone[2]} {commonZone[3]}");
+            Console.WriteLine($"          {commonZone[36]} {blueSafeZone[3]} {commonZone[4]}");
+            Console.WriteLine($"  {commonZone[31]} {commonZone[32]} {commonZone[33]} {commonZone[34]} {commonZone[35]} {blueSafeZone[4]} {commonZone[5]} {commonZone[6]} {commonZone[7]} {commonZone[8]} {commonZone[9]}");
+            Console.WriteLine($"  {commonZone[30]} {yellowSafeZone[1]} {yellowSafeZone[2]} {yellowSafeZone[3]} {yellowSafeZone[4]}   {greenSafeZone[4]} {greenSafeZone[3]} {greenSafeZone[2]} {greenSafeZone[1]} {commonZone[10]}");
+            Console.WriteLine($"  {commonZone[29]} {commonZone[28]} {commonZone[27]} {commonZone[26]} {commonZone[25]} {redSafeZone[4]} {commonZone[15]} {commonZone[14]} {commonZone[13]} {commonZone[12]} {commonZone[11]}");
+            Console.WriteLine($"          {commonZone[24]} {redSafeZone[3]} {commonZone[16]}");
+            Console.WriteLine($"          {commonZone[23]} {redSafeZone[2]} {commonZone[17]}");
+            Console.WriteLine($"    R:{redsInNest}   {commonZone[22]} {redSafeZone[1]} {commonZone[18]}    G:{greensInNest}");
+            Console.WriteLine($"          {commonZone[21]} {commonZone[20]} {commonZone[19]}");
+        }
+
+        private static void FillZonesWithPieces(LudoEngine game)
+        {
+            foreach (var player in game.Players)
+            {
+                if (player.Pieces[0].GetType() == typeof(BluePiece))
+                {
+                    DrawPlayerSafeZone(blueSafeZone, player.Pieces);
+                }
+                else if (player.Pieces[0].GetType() == typeof(GreenPiece))
+                {
+                    DrawPlayerSafeZone(greenSafeZone, player.Pieces);
+                }
+                else if (player.Pieces[0].GetType() == typeof(RedPiece))
+                {
+                    DrawPlayerSafeZone(redSafeZone, player.Pieces);
+                }
+                if (player.Pieces[0].GetType() == typeof(YellowPiece))
+                {
+                    DrawPlayerSafeZone(yellowSafeZone, player.Pieces);
+                }
+            }
+
+            for (int i = 1; i < commonZone.Length; i++)
+            {
+                commonZone[i] = "O";
+                foreach (var player in game.Players)
+                {
+                    foreach (var piece in player.Pieces)
+                    {
+                        if (piece.AbsoluteBoardPosition == i && !game.PieceIsInSafeZone(piece))
+                            commonZone[i] = piece.GetType().Name.Remove(1);
+                    }
+
+                }
+            }
         }
 
         private static string AskForUsername()
@@ -158,7 +269,7 @@ namespace LudoConsole
                 Console.WriteLine("Which piece do you want to move?");
                 for (int i = 0; i < moveablePieces.Count; i++)
                 {
-                    Console.WriteLine($"{i}: Piece at position {moveablePieces[i].BoardPosition}");
+                    Console.WriteLine($"{i}: Piece at position {moveablePieces[i].RelativePosition}/45");
                 }
 
                 var choiceIsNumber = int.TryParse(Console.ReadLine(), out choice);
@@ -180,8 +291,6 @@ namespace LudoConsole
             } while (input != "r");
 
             int moves = game.ThrowDice();
-            Console.WriteLine($"{player.Name} got a {moves}!");
-
             return moves;
         }
 
@@ -194,6 +303,7 @@ namespace LudoConsole
             Console.WriteLine("4: Show history of all games");
             Console.WriteLine("9: Exit");
             int.TryParse(Console.ReadLine(), out int choice);
+            Console.Clear();
             return choice;
         }
 
@@ -245,7 +355,7 @@ namespace LudoConsole
             game.SaveGame();
         }
 
-        private static void MovePiece(int moves, IPiece piece, LudoEngine game)
+        private static bool MovePiece(int moves, IPiece piece, LudoEngine game)
         {
             bool couldMove = game.MovePiece(piece, moves);
 
@@ -258,12 +368,14 @@ namespace LudoConsole
                 if (collidingPiece != null && game.PieceIsEnemy(collidingPiece))
                     Console.WriteLine($"{game.CurrentPlayer.Name} knocked away a {collidingPiece.GetType().Name.Replace("Piece", "")} piece!");
                 if (collidingPiece == null && !game.PieceIsInGoal(piece))
-                    Console.WriteLine($"{game.CurrentPlayer.Name} moved a piece to position {piece.BoardPosition}");
+                    Console.WriteLine($"{game.CurrentPlayer.Name} moved a piece to position {piece.RelativePosition}/45");
             }
             else
             {
                 Console.WriteLine("Sorry, can't do that");
             }
+            
+            return couldMove;
         }
     }
 
