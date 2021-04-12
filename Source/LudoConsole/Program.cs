@@ -107,6 +107,7 @@ namespace LudoConsole
                 input = Console.ReadLine();
                 gameExists = LudoEngine.GameExists(input, dbContext);
                 if (gameExists)
+                    Console.Clear();
                     Console.WriteLine("Sorry, name already taken.");
             } while (gameExists);
 
@@ -122,6 +123,7 @@ namespace LudoConsole
                 DrawBoard(game);
                 int moves = LetPlayerRollDice(game.CurrentPlayer, game);
                 Console.WriteLine($"{game.CurrentPlayer.Name} got a {moves}!");
+                Console.WriteLine();
                 var moveablePiece = game.GetMoveablePieces(moves);
                 if (moveablePiece.Count > 0)
                 {
@@ -140,6 +142,7 @@ namespace LudoConsole
                 gameHasWinner = game.FindWinner();
                 game.SwitchPlayer();
             }
+            Console.WriteLine();
             Console.WriteLine($"{game.Winner.Name} won the game!");
         }
 
@@ -253,10 +256,14 @@ namespace LudoConsole
         {
             if (user != null)
             {
+                Console.WriteLine();
                 Console.WriteLine($"You've won {(user.GamesWon == null ? "0" : $"{user.GamesWon}")} games and lost {(user.GamesLost == null ? "0" : $"{user.GamesLost}")}!");
             }
             else
+            {
+                Console.WriteLine();
                 Console.WriteLine("Couldn't find user");
+            }               
         }
 
         private static IPiece LetPlayerChoosePiece(List<IPiece> moveablePieces, LudoEngine game)
@@ -286,6 +293,7 @@ namespace LudoConsole
             string input;
             do
             {
+                Console.WriteLine();
                 Console.WriteLine($"{player.Name} it's your turn. Enter 'r' to roll the dice.");
                 input = Console.ReadLine();
 
@@ -297,7 +305,9 @@ namespace LudoConsole
 
         private static int ChooseFromMainMenu()
         {
+            Console.WriteLine();
             Console.WriteLine("What do you want to do?");
+            Console.WriteLine();
             Console.WriteLine("1: Start new game");
             Console.WriteLine("2: Load game");
             Console.WriteLine("3: Show user statistics");
