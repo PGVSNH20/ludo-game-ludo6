@@ -6,7 +6,19 @@
         public int StartPosition { get; } = 31;
         public int EndPosition { get; } = 75;
         public int Offset { get; } = 30;
-        public int BoardPosition { get { return Position == 0 ? 0 : Position - Offset; } }
+        public int RelativePosition { get { return Position == 0 ? 0 : Position - Offset; } }
+        public int AbsoluteBoardPosition
+        {
+            get
+            {
+                if (Position > 40)
+                {
+                    return Position - 40;
+                }
+                else
+                    return Position;
+            }
+        }
         public string Color { get; } = "Yellow";
     }
 }
