@@ -118,6 +118,7 @@ namespace LudoConsole
             bool gameHasWinner = false;
             while (!gameHasWinner)
             {
+                Console.Clear();
                 DrawBoard(game);
                 int moves = LetPlayerRollDice(game.CurrentPlayer, game);
                 Console.WriteLine($"{game.CurrentPlayer.Name} got a {moves}!");
