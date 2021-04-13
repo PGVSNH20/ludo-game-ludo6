@@ -71,6 +71,40 @@
 testgame - Winner: Lisa
 testgame2 - Winner: Nils
 
+## LudoEngine usage
+### New game
+* Use GameExists to check that the game name is available.
+* Instantiate a LudoEngine, passing in a DB context and name for the game.
+
+### Load a game
+* Use Load and pass in the game name and a DB context to instantiate an ongoing game.
+
+### Gameplay
+* Use GetPieceTypes to get a list of all available piece types.
+* Use AddPlayer to create a player and send in the wanted piece type.
+* Use SaveGame to save the new game.
+* Use ThrowDice to get a random number between 1 and 6.
+* Use GetMoveablePieces to get a list of all the current players moveable pieces.
+* Use MovePiece to move one of the moveable pieces the correct number of steps.
+* Collided and CollidingPiece can be used to check if there was a collision.
+* Use PieceIsEnemy to check if the colliding piece is an enemy piece.
+* Use PieceIsInGoal to check if the piece entered goal.
+* Use FindWinner to see if anyone won the game.
+* Use SwitchPlayer to switch the current player.
+
+### Stats
+* Use GetUserByName to get a user, with GamesWon & GamesLost.
+* Use GetAllGames to get all games.
+
+## LudoEngine Classes
+### In DataAccess
+Class for DB context to communicate with database.
+### In DbModels
+Models used in the database.
+### In GameModels
+Models used in the game.
+### LudoEngine.cs
+Contains all logic for the game.
 
 ## Database
 
@@ -89,11 +123,21 @@ Columns:
 * Active
 * NextToRollDice
 
+### Table: GameMembers
+Columns:
+* GameID
+* UserID
+* PieceID
+
+### Table: Pieces
+Columns:
+* PieceID
+* Color
+
 ### Table: GamePositions
 Columns:
 * ID
 * GameID
 * UserID
-* Color
 * Position
 
